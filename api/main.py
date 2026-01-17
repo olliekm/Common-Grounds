@@ -38,6 +38,14 @@ def get_events(user_id: int, matcha_mode: bool, limit: int = 10):
     Get events for a user filtered by mode (matcha or coffee).
     The user_id is passed to the recommendation engine for personalized suggestions.
     """
+
+    """
+    {
+        1: embedlkmaed,
+        2: nfweklfnlw;ekfw,
+    }
+    """
+    # TODO: GET ALL EVENTS AND EMBEDINGS PASS AS DICTIONARY
     # TODO: Integrate with recommendation engine using user_id
     # TODO: Filter out events user has already seen
     data = supabase.table("events").select("*").limit(limit).execute()
