@@ -61,7 +61,4 @@ class AnalyticsSwipe(BaseModel):
     time_spent: Optional[datetime.timedelta]
     liked: bool
     matcha_mode: bool
-
-class Dashboard(BaseModel):
-    person: AnalyticsPerson
     
