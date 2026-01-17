@@ -17,19 +17,25 @@ class EmbeddingToolbox:
         """
         self.model = SentenceTransformer(self.model)
 
-    def encode(self, text: str) -> np.ndarray:
+    def encode(self, blurb: str, tags: list[str]) -> np.ndarray:
         """
         Encodes the text
         
-        :param text: text of what needs to be encoded
-        :type text: str
+        :param blurb: text of what needs to be encoded
+        :type blurb: str
+        :param tags: list of tags associated with the blurb
+        :type tags: list of str
         :return: np.ndarray embedding of the text
         :rtype: ndarray
         """
-        if not isinstance(text, str):
+        if not isinstance(blurb, str):
             raise TypeError("encode expects a single string")
-        
-        embedding = self.model.encode(text, convert_to_numpy=True, normalize_embeddings=True)
+
+        if not isinstance(tags, list):
+            raise TypeError("encode expects a list of tags")
+
+        new_text = blurb + " " + " ".join([f"#{tag}" for tag in tags])
+        embedding = self.model.encode(new_text, convert_to_numpy=True, normalize_embeddings=True)
         return embedding
     
     def compute_similarity(self, emb1: np.ndarray, emb2: np.ndarray) -> float:
