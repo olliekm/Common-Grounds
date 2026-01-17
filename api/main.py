@@ -4,6 +4,12 @@ from typing import Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from supabase import create_client, Client
+import google.generativeai as genai
+
+from engine.ml_models.gemini_client import GeminiClient
+from engine.ml_models.embedding_toolbox import EmbeddingToolbox
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 load_dotenv()
 
@@ -14,7 +20,6 @@ from models import (
     Analytics,
 )
 
-
 app = FastAPI()
 
 # Supabase client
@@ -23,6 +28,14 @@ supabase: Client = create_client(
     os.environ.get("SUPABASE_KEY", "")
 )
 
+if not GEMINI_API_KEY:
+    raise ValueError("GEMINI_API_KEY environment variable is not set")
+genai.configure(api_key=GEMINI_API_KEY)
+gemini_model = genai.GenerativeModel("gemini-2.5-flash")
+gemini_client = GeminiClient(gemini_model)
+
+embedding_toolbox = EmbeddingToolbox()
+embedding_toolbox.instantiate()
 
 # Events
 @app.post("/events", response_model=Event)
@@ -38,6 +51,14 @@ def get_events(user_id: int, matcha_mode: bool, limit: int = 10):
     Get events for a user filtered by mode (matcha or coffee).
     The user_id is passed to the recommendation engine for personalized suggestions.
     """
+
+    """
+    {
+        1: embedlkmaed,
+        2: nfweklfnlw;ekfw,
+    }
+    """
+    # TODO: GET ALL EVENTS AND EMBEDINGS PASS AS DICTIONARY
     # TODO: Integrate with recommendation engine using user_id
     # TODO: Filter out events user has already seen
     data = supabase.table("events").select("*").limit(limit).execute()
@@ -57,6 +78,7 @@ def get_event(event_id: int):
 @app.post("/swipe", response_model=SwipeResponse)
 def swipe_event(swipe: SwipeRequest):
     """Record a swipe (left/right) on an event for a user."""
+    # TODO add id to seen on user object
     time_spent = (swipe.view_end - swipe.view_start).total_seconds()
     liked = swipe.direction == "right"
 
@@ -83,6 +105,8 @@ def swipe_event(swipe: SwipeRequest):
 @app.post("/users", response_model=User)
 def create_user(user: UserCreate):
     """Create a new user."""
+    #TODO call encode on tags with matcha_blur
+    #TODO call encode on tags with coffee blurb
     data = supabase.table("users").insert(user.model_dump()).execute()
     return data.data[0]
 
