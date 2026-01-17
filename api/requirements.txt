@@ -15,7 +15,7 @@ fastapi-cli==0.0.20
 fastapi-cloud-cli==0.11.0
 fastar==0.8.0
 fsspec==2026.1.0
-google-generativeai==0.3.3
+google-generativeai==0.8.6
 h11==0.16.0
 h2==4.3.0
 hpack==4.1.0
@@ -56,7 +56,6 @@ rignore==0.7.6
 sentence-transformers>=2.2.2
 sentry-sdk==2.49.0
 shellingham==1.5.4
-google-generativeai>=0.3.0
 six==1.17.0
 sortedcontainers==2.4.0
 starlette==0.50.0

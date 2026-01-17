@@ -11,7 +11,7 @@ from collections import Counter
 from datetime import timedelta
 from typing import Iterable, List, Dict, Any, Optional
 
-from ..models import (
+from models import (
 	Analytics,
 	AnalyticsSwipe,
 	Dashboard,
@@ -36,6 +36,7 @@ def aggregate_mode(swipes: Iterable[AnalyticsSwipe], matcha_mode: bool) -> Dict[
 	right_times = [_seconds(s.time_spent) for s in swipes_list if s.liked]
 	avg_left_time = _safe_div(sum(left_times), len(left_times))
 	avg_right_time = _safe_div(sum(right_times), len(right_times))
+	hesitation_score = _safe_div(avg_right_time, avg_left_time) if avg_left_time else 0.0
 	hesitation_score = _safe_div(avg_right_time, avg_left_time) if avg_left_time else 0.0
 
 	return {

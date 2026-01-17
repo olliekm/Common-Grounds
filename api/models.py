@@ -70,8 +70,6 @@ class AnalyticsSwipe(BaseModel):
     person_id: str
     tags: Optional[list[str]] = None
     time_spent: Optional[timedelta]
-    liked: bool
-    matcha_mode: bool
 
 class Analytics(BaseModel):
     id: int
