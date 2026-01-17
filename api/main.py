@@ -4,7 +4,14 @@ from typing import Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from supabase import create_client, Client
-from fastapi.middleware.cors import CORSMiddleware 
+import google.generativeai as genai
+import numpy as np
+from analytics import generate_dashboard
+
+from engine.ml_models.gemini_client import GeminiClient
+from engine.ml_models.embedding_toolbox import EmbeddingToolbox
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 load_dotenv()
 
@@ -12,9 +19,8 @@ from models import (
     Event, EventCreate,
     User, UserCreate,
     SwipeRequest, SwipeResponse,
-    Analytics,
+    Analytics, Dashboard,
 )
-
 
 app = FastAPI()
 
@@ -36,6 +42,14 @@ supabase: Client = create_client(
     os.environ.get("SUPABASE_KEY", "")
 )
 
+if not GEMINI_API_KEY:
+    raise ValueError("GEMINI_API_KEY environment variable is not set")
+genai.configure(api_key=GEMINI_API_KEY)
+gemini_model = genai.GenerativeModel("gemini-2.5-flash")
+gemini_client = GeminiClient(gemini_model)
+
+embedding_toolbox = EmbeddingToolbox()
+embedding_toolbox.instantiate()
 
 # Events
 @app.post("/events", response_model=Event)
@@ -51,7 +65,19 @@ def get_events(user_id: int, matcha_mode: bool, limit: int = 10):
     Get events for a user filtered by mode (matcha or coffee).
     The user_id is passed to the recommendation engine for personalized suggestions.
     """
+
+    """
+    {
+        1: embedlkmaed,
+        2: nfweklfnlw;ekfw,
+    }
+    """
+
+    # TODO: GET ALL EVENTS AND EMBEDINGS PASS AS DICTIONARY
+    # TODO: get last 5 event ids
+    # TODO: get all analytics from user and event ids
     # TODO: Integrate with recommendation engine using user_id
+
     # TODO: Filter out events user has already seen
     data = supabase.table("events").select("*").limit(limit).execute()
     return data.data
@@ -70,6 +96,7 @@ def get_event(event_id: int):
 @app.post("/swipe", response_model=SwipeResponse)
 def swipe_event(swipe: SwipeRequest):
     """Record a swipe (left/right) on an event for a user."""
+    # TODO add id to seen on user object
     time_spent = (swipe.view_end - swipe.view_start).total_seconds()
     liked = swipe.direction == "right"
 
@@ -96,7 +123,16 @@ def swipe_event(swipe: SwipeRequest):
 @app.post("/users", response_model=User)
 def create_user(user: UserCreate):
     """Create a new user."""
-    data = supabase.table("users").insert(user.model_dump()).execute()
+    coffee_embeddings = embedding_toolbox.encode(user.coffee_blurb, user.tags).tolist()
+    matcha_embeddings = embedding_toolbox.encode(user.matcha_blurb, user.tags).tolist()
+
+    user_data = user.model_dump()
+    user_data["embeddings"] = {
+        "coffee": coffee_embeddings,
+        "matcha": matcha_embeddings,
+    }
+
+    data = supabase.table("users").insert(user_data).execute()
     return data.data[0]
 
 
@@ -110,11 +146,13 @@ def get_user(user_id: int):
 
 
 # Analytics
-@app.get("/users/{user_id}/analytics", response_model=list[Analytics])
+@app.get("/users/{user_id}/analytics", response_model=Dashboard)
 def get_user_analytics(user_id: int, matcha_mode: Optional[bool] = None):
     """Get analytics for a user, optionally filtered by mode."""
     query = supabase.table("analytics").select("*").eq("user_id", user_id)
     if matcha_mode is not None:
         query = query.eq("matcha_mode", matcha_mode)
     data = query.execute()
-    return data.data
+    dashboard = generate_dashboard([Analytics(**record) for record in data.data])
+
+    return dashboard
