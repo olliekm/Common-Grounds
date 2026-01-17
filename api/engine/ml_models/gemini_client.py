@@ -59,6 +59,4 @@ Return plain text only.
         """
         Prompts Gemini to analyze an instance of an analytic event and return a concise summary.
         """
-        prompt = self.analytic_prompt(analytic)
-        response = self.generate_content(prompt)
-        return response.text.strip()
+        
