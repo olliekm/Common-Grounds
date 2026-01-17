@@ -55,47 +55,66 @@ Return plain text only.
         response = self.model.generate_content(prompt)
         return response.text.strip()
 
-    def _build_analytics_prompt(self, coffee: dict, matcha: dict, tags: dict, total_swipes: int) -> str:
+    def generate_user_encouragement(self, coffee: dict, matcha: dict, tags: dict, total_swipes: int) -> str:
         """
-        Builds the prompt for Gemini to analyze dashboard metrics.
+        Generate an encouraging AI summary for the user based on their overall engagement.
+        Returns a single encouraging message string.
         """
         top_tags_text = ""
         if tags.get("top_tags"):
-            top_tags_list = ", ".join([f"{tag[0]} ({tag[1]} swipes)" for tag in tags["top_tags"][:3]])
-            top_tags_text = f"\nTop tags: {top_tags_list}"
+            top_tags_list = ", ".join([tag[0] for tag in tags["top_tags"][:3]])
+            top_tags_text = f"Your top interests include: {top_tags_list}."
 
-        analytics_summary = f"""
-Dashboard Summary:
-- Total swipes: {total_swipes}
-- Coffee mode: {coffee['interactions']} interactions, {coffee['like_rate']:.0%} like rate, {coffee['avg_time_per_interaction']:.1f}s avg time
-- Matcha mode: {matcha['interactions']} interactions, {matcha['like_rate']:.0%} like rate, {matcha['avg_time_per_interaction']:.1f}s avg time{top_tags_text}
-"""
+        prompt = f"""
+You are a friendly coach analyzing a user's activity on a coffee/matcha matching platform.
 
-        return f"""
-You are an analytics expert analyzing user engagement data from a coffee/matcha matching platform.
-
-{analytics_summary}
+User Activity Summary:
+- Total events explored: {total_swipes}
+- Coffee mode (professional): {coffee['interactions']} interactions, {coffee['like_rate']:.0%} liked
+- Matcha mode (hobbies/fun): {matcha['interactions']} interactions, {matcha['like_rate']:.0%} liked
+{top_tags_text}
 
 Task:
-Generate 2-3 concise, actionable insights from this engagement data.
-Focus on:
-1. Mode preference trends
-2. Interaction patterns and time spent
-3. Top tag signals and recommendations
+Write a warm, encouraging 2-3 sentence summary that:
+1. Celebrates their engagement and activity
+2. Highlights what they seem to enjoy (modes/interests)
+3. Motivates them to keep exploring
 
-Provide insights as plain text in 3 sentences. Be specific and data-driven.
+Tone: Friendly, positive, personalized. Return plain text only.
 """
-
-    def analyze_analytics(self, coffee: dict, matcha: dict, tags: dict, total_swipes: int) -> list[str]:
-        """
-        Calls Gemini to generate AI insights from dashboard metrics.
-        Returns a list of insight strings.
-        """
-        prompt = self._build_analytics_prompt(coffee, matcha, tags, total_swipes)
         response = self.generate_content(prompt)
+        return response.text.strip()
+
+    def extract_recent_interests(self, recent_events: list[dict]) -> str:
+        """
+        Analyze the last 5 seen events and extract emerging interest patterns.
+        Returns a brief, 3 sentence text summary for topic modeling/recommendation updates.
         
-        # Parse the response into individual insights
-        text = response.text.strip()
-        insights = [line.strip() for line in text.split("\n") if line.strip()]
-        
-        return insights if insights else ["Unable to generate insights at this time."]
+        :param recent_events: List of dicts with 'title', 'tags', 'liked', 'mode' keys
+        """
+        if not recent_events:
+            return "No recent activity to analyze."
+
+        events_summary = "\n".join([
+            f"- {e.get('title', 'Untitled')} ({e.get('mode', 'unknown')} mode) | Liked: {e.get('liked', False)} | Tags: {', '.join(e.get('tags', []))}"
+            for e in recent_events[:5]
+        ])
+
+        prompt = f"""
+You are analyzing a user's most recent event interactions to update their recommendation profile.
+
+Recent 5 events:
+{events_summary}
+
+Task:
+Identify emerging interest patterns and themes from these recent interactions.
+Focus on:
+1. Which topics/tags are getting attention
+2. Mode preferences (coffee vs matcha)
+3. Shift in interests compared to random baseline
+
+Output: 2-3 sentences capturing the user's current interest trajectory.
+Be specific about topics. Return plain text only.
+"""
+        response = self.generate_content(prompt)
+        return response.text.strip()

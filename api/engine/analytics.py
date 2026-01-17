@@ -87,7 +87,12 @@ def generate_dashboard(person: AnalyticsPerson, swipes: List[AnalyticsSwipe], ge
 	# Generate AI insights using GeminiClient if provided
 	ai_insights: List[str] = []
 	if gemini_client:
-		ai_insights = gemini_client.analyze_analytics(coffee_metrics, matcha_metrics, tags, total_swipes)
+		ai_insights = gemini_client.generate_user_encouragement(
+			coffee_metrics,
+			matcha_metrics,
+			tags,
+			total_swipes
+		)
 
 	# Keep person counters in sync with aggregated values.
 	person_updated = person.copy(update={
