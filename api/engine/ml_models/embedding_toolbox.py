@@ -45,3 +45,25 @@ class EmbeddingToolbox:
         """
         similarity = np.dot(emb1, emb2)
         return float(similarity)
+    
+    def embedding_to_list(self, embedding: np.ndarray) -> list:
+        """
+        Converts embedding ndarray to list for easier storage
+        
+        :param embedding: embedding ndarray
+        :type embedding: ndarray
+        :return: list representation of embedding
+        :rtype: list
+        """
+        return embedding.tolist()
+    
+    def list_to_embedding(self, embedding_list: list) -> np.ndarray:
+        """
+        Converts list back to embedding ndarray
+        
+        :param embedding_list: list representation of embedding
+        :type embedding_list: list
+        :return: embedding ndarray
+        :rtype: ndarray
+        """
+        return np.array(embedding_list)
