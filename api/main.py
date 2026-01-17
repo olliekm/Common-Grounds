@@ -4,7 +4,6 @@ from typing import Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from supabase import create_client, Client
-import google.generativeai as genai
 import numpy as np
 from engine.analytics import generate_dashboard
 
@@ -30,11 +29,7 @@ supabase: Client = create_client(
     os.environ.get("SUPABASE_KEY", "")
 )
 
-if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY environment variable is not set")
-genai.configure(api_key=GEMINI_API_KEY)
-gemini_model = genai.GenerativeModel("gemini-2.5-flash")
-gemini_client = GeminiClient(gemini_model)
+gemini_client = GeminiClient()
 
 embedding_toolbox = EmbeddingToolbox()
 embedding_toolbox.instantiate()
