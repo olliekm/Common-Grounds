@@ -42,7 +42,7 @@ def aggregate_mode(swipes: Iterable[AnalyticsSwipe], matcha_mode: bool) -> Dict[
 	hesitation_score = _safe_div(avg_left_time, avg_right_time) if avg_right_time else 0.0
 
 	return {
-		"mode": mode,
+		"mode": matcha_mode,
 		"time_spent_seconds": time_spent_seconds,  # Total time
 		"swipes_right": swipes_right,  # Number of swipe right
 		"swipes_left": swipes_left,  # Number of swipe left
