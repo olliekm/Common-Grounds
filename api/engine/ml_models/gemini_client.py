@@ -59,6 +59,7 @@ Return plain text only.
         """
         Builds the prompt for Gemini to analyze dashboard metrics.
         """
+<<<<<<< HEAD
         top_tags_text = ""
         if tags.get("top_tags"):
             top_tags_list = ", ".join([f"{tag[0]} ({tag[1]} swipes)" for tag in tags["top_tags"][:3]])
@@ -100,3 +101,6 @@ Return plain text only.
         insights = [line.strip() for line in text.split("\n") if line.strip()]
         
         return insights if insights else ["Unable to generate insights at this time."]
+=======
+        
+>>>>>>> 72a67524b148b6f1764e1a714e8e4c2d09e2fb5c
