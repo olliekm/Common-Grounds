@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from supabase import create_client, Client
 import google.generativeai as genai
 import numpy as np
+from analytics import generate_dashboard
 
 from engine.ml_models.gemini_client import GeminiClient
 from engine.ml_models.embedding_toolbox import EmbeddingToolbox
@@ -18,7 +19,7 @@ from models import (
     Event, EventCreate,
     User, UserCreate,
     SwipeRequest, SwipeResponse,
-    Analytics,
+    Analytics, Dashboard,
 )
 
 app = FastAPI()
@@ -59,8 +60,12 @@ def get_events(user_id: int, matcha_mode: bool, limit: int = 10):
         2: nfweklfnlw;ekfw,
     }
     """
+
     # TODO: GET ALL EVENTS AND EMBEDINGS PASS AS DICTIONARY
+    # TODO: get last 5 event ids
+    # TODO: get all analytics from user and event ids
     # TODO: Integrate with recommendation engine using user_id
+
     # TODO: Filter out events user has already seen
     data = supabase.table("events").select("*").limit(limit).execute()
     return data.data
@@ -129,11 +134,13 @@ def get_user(user_id: int):
 
 
 # Analytics
-@app.get("/users/{user_id}/analytics", response_model=list[Analytics])
+@app.get("/users/{user_id}/analytics", response_model=Dashboard)
 def get_user_analytics(user_id: int, matcha_mode: Optional[bool] = None):
     """Get analytics for a user, optionally filtered by mode."""
     query = supabase.table("analytics").select("*").eq("user_id", user_id)
     if matcha_mode is not None:
         query = query.eq("matcha_mode", matcha_mode)
     data = query.execute()
-    return data.data
+    dashboard = generate_dashboard([Analytics(**record) for record in data.data])
+
+    return dashboard
