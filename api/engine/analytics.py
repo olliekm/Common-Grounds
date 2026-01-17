@@ -24,8 +24,8 @@ def _safe_div(numerator: float, denominator: float) -> float:
 	return numerator / denominator if denominator else 0.0
 
 
-def aggregate_mode(swipes: Iterable[AnalyticsSwipe], mode: bool) -> Dict[str, Any]:
-	swipes_list = [s for s in swipes if s.matcha_mode == mode]
+def aggregate_mode(swipes: Iterable[AnalyticsSwipe], matcha_mode: bool) -> Dict[str, Any]:
+	swipes_list = [s for s in swipes if s.matcha_mode == matcha_mode]
 	time_spent_seconds = sum(_seconds(s.time_spent) for s in swipes_list)
 	swipes_right = sum(1 for s in swipes_list if s.liked)
 	swipes_left = sum(1 for s in swipes_list if not s.liked)
