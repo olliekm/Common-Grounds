@@ -11,7 +11,7 @@ from collections import Counter
 from datetime import timedelta
 from typing import Iterable, List, Dict, Any, Optional
 
-from ..models import (
+from models import (
 	Analytics,
 	AnalyticsSwipe,
 	Dashboard,

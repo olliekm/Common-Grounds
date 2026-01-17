@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException
 from supabase import create_client, Client
 import google.generativeai as genai
 import numpy as np
-from analytics import generate_dashboard
+from engine.analytics import generate_dashboard
 
 from engine.ml_models.gemini_client import GeminiClient
 from engine.ml_models.embedding_toolbox import EmbeddingToolbox
