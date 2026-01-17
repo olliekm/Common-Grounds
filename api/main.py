@@ -9,6 +9,7 @@ from engine.analytics import generate_dashboard
 
 from engine.ml_models.gemini_client import GeminiClient
 from engine.ml_models.embedding_toolbox import EmbeddingToolbox
+from engine.recommendation_engine import recommend_events
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
@@ -46,24 +47,60 @@ def create_event(event: EventCreate):
 def get_events(user_id: int, matcha_mode: bool, limit: int = 10):
     """
     Get events for a user filtered by mode (matcha or coffee).
-    The user_id is passed to the recommendation engine for personalized suggestions.
+    Uses the recommendation engine for personalized suggestions.
     """
+    # Get user data (blurb, tags, seen)
+    user_data = supabase.table("users").select("*").eq("id", user_id).execute()
+    if not user_data.data:
+        raise HTTPException(status_code=404, detail="User not found")
+    user = user_data.data[0]
 
-    """
-    {
-        1: embedlkmaed,
-        2: nfweklfnlw;ekfw,
-    }
-    """
+    seen = user.get("seen") or []
+    user_tags = user.get("tags") or []
+    user_blurb = user.get("matcha_blurb") if matcha_mode else user.get("coffee_blurb")
+    user_blurb = user_blurb or ""
 
-    # TODO: GET ALL EVENTS AND EMBEDINGS PASS AS DICTIONARY
-    # TODO: get last 5 event ids
-    # TODO: get all analytics from user and event ids
-    # TODO: Integrate with recommendation engine using user_id
+    # Get all events with embeddings
+    events_data = supabase.table("events").select("*").execute()
+    all_events = events_data.data
 
-    # TODO: Filter out events user has already seen
-    data = supabase.table("events").select("*").limit(limit).execute()
-    return data.data
+    # Build event embeddings dictionary {event_id: embedding}
+    event_embeddings_dict = {}
+    for event in all_events:
+        if event.get("embeddings"):
+            emb = event["embeddings"].get("matcha") if matcha_mode else event["embeddings"].get("coffee")
+            if emb:
+                event_embeddings_dict[event["id"]] = emb
+
+    # Get user's swipe analytics for the last 5 seen events (or fewer)
+    last_5_seen = seen[-5:] if len(seen) > 5 else seen
+    swipes = []
+    if last_5_seen:
+        analytics_data = supabase.table("analytics").select("*").eq("user_id", user_id).eq("matcha_mode", matcha_mode).in_("event_id", last_5_seen).execute()
+        swipes = [Analytics(**record) for record in analytics_data.data]
+
+    # Get recommended event IDs
+    recommended_ids = recommend_events(
+        event_embeddings_dict=event_embeddings_dict,
+        seen=seen,
+        EmbeddingToolbox=embedding_toolbox,
+        user_blurb=user_blurb,
+        user_tags=user_tags,
+        GeminiClient=gemini_client,
+        swipes=swipes,
+        matcha_mode=matcha_mode,
+        top_k=limit
+    )
+
+    # Return recommended events in order
+    recommended_events = []
+    for event_id in recommended_ids:
+        for event in all_events:
+            if event["id"] == event_id:
+                recommended_events.append(event)
+                break
+
+    return recommended_events
 
 
 @app.get("/events/{event_id}", response_model=Event)
