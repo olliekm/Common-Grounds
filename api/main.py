@@ -148,8 +148,16 @@ def swipe_event(swipe: SwipeRequest):
 @app.post("/users", response_model=User)
 def create_user(user: UserCreate):
     """Create a new user."""
-    coffee_embeddings = embedding_toolbox.encode(user.coffee_blurb, user.tags).tolist()
-    matcha_embeddings = embedding_toolbox.encode(user.matcha_blurb, user.tags).tolist()
+    tags = user.tags or []
+    coffee_blurb = user.coffee_blurb or ""
+    matcha_blurb = user.matcha_blurb or ""
+
+    coffee_embedding = embedding_toolbox.encode(coffee_blurb, tags)
+    matcha_embedding = embedding_toolbox.encode(matcha_blurb, tags)
+
+    # Convert numpy arrays to Python lists
+    coffee_embeddings = coffee_embedding.tolist() if hasattr(coffee_embedding, 'tolist') else list(coffee_embedding)
+    matcha_embeddings = matcha_embedding.tolist() if hasattr(matcha_embedding, 'tolist') else list(matcha_embedding)
 
     user_data = user.model_dump()
     user_data["embeddings"] = {

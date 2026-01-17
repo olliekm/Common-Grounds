@@ -19,7 +19,7 @@ class User(BaseModel):
     matcha_blurb: Optional[str] = None
     coffee_blurb: Optional[str] = None
     tags: Optional[list[Any]] = None
-    embeddings: Optional[list[Any]] = None
+    embeddings: Optional[Dict[str, Any]] = None
     seen: Optional[list[Any]] = None
 
 
@@ -38,7 +38,7 @@ class Event(BaseModel):
     description: Optional[str] = None
     tags: Optional[list[Any]] = None
     mode: Optional[list[Any]] = None  # matcha/coffee modes
-    embeddings: Optional[list[Any]] = None
+    embeddings: Optional[Dict[str, Any]] = None
 
 
 class EventCreate(BaseModel):

@@ -1,11 +1,12 @@
 """Contains the general embedding functions that call and return embeddings.
 Also contains similarity computation functions. Can be used for recommendation."""
 
-from ml_models.embedding_toolbox import EmbeddingToolbox
-from ml_models.gemini_client import GeminiClient
-from analytics import aggregate_mode
-from ..models import AnalyticsSwipe
 from typing import Iterable
+
+from engine.ml_models.embedding_toolbox import EmbeddingToolbox
+from engine.ml_models.gemini_client import GeminiClient
+from engine.analytics import aggregate_mode
+from models import AnalyticsSwipe
 
 def _update_user_embedding(user_blurb: str, user_tags: list[str], EmbeddingToolbox: EmbeddingToolbox,
                           analytics_text: str, GeminiClient: GeminiClient) -> list[float]:
@@ -49,7 +50,7 @@ def _get_top_events(user_embedding: list[float], event_embeddings_dict: dict[int
     
     similarities.sort(key=lambda x: x[1], reverse=True)
     sorted_ids = [event_id for event_id, _ in similarities]
-    return sorted[:top_k]
+    return sorted_ids[:top_k]
 
 def recommend_events(event_embeddings_dict: dict[int, list[float]], seen: list[int], EmbeddingToolbox: EmbeddingToolbox, 
                      user_blurb: str, user_tags: list[str], GeminiClient: GeminiClient,
