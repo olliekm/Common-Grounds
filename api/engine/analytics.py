@@ -12,10 +12,9 @@ from datetime import timedelta
 from typing import Iterable, List, Dict, Any, Optional
 
 from ..models import (
-	AnalyticsPerson,
+	Analytics,
 	AnalyticsSwipe,
 	Dashboard,
-	EventSide,
 	SwipeDirection,
 )
 from .ml_models.gemini_client import GeminiClient
@@ -25,28 +24,33 @@ def _safe_div(numerator: float, denominator: float) -> float:
 	return numerator / denominator if denominator else 0.0
 
 
-def _aggregate_mode(swipes: Iterable[AnalyticsSwipe], mode: EventSide) -> Dict[str, Any]:
-	swipes_list = [s for s in swipes if _mode_of_swipe(s) == mode]
+def aggregate_mode(swipes: Iterable[AnalyticsSwipe], mode: bool) -> Dict[str, Any]:
+	swipes_list = [s for s in swipes if s.matcha_mode == mode]
 	time_spent_seconds = sum(_seconds(s.time_spent) for s in swipes_list)
 	swipes_right = sum(1 for s in swipes_list if s.liked)
 	swipes_left = sum(1 for s in swipes_list if not s.liked)
 	interactions = len(swipes_list)
 	avg_time = _safe_div(time_spent_seconds, interactions)
 	like_rate = _safe_div(swipes_right, interactions)
+	
+	# Hesitation score: ratio of avg time on rejected items to avg time on liked items
+	# Higher score means user takes longer to reject (more hesitation)
+	left_times = [_seconds(s.time_spent) for s in swipes_list if not s.liked]
+	right_times = [_seconds(s.time_spent) for s in swipes_list if s.liked]
+	avg_left_time = _safe_div(sum(left_times), len(left_times))
+	avg_right_time = _safe_div(sum(right_times), len(right_times))
+	hesitation_score = _safe_div(avg_left_time, avg_right_time) if avg_right_time else 0.0
 
 	return {
 		"mode": mode,
-		"time_spent_seconds": time_spent_seconds,
-		"swipes_right": swipes_right,
-		"swipes_left": swipes_left,
-		"interactions": interactions,
-		"avg_time_per_interaction": avg_time,
-		"like_rate": like_rate,
+		"time_spent_seconds": time_spent_seconds,  # Total time
+		"swipes_right": swipes_right,  # Number of swipe right
+		"swipes_left": swipes_left,  # Number of swipe left
+		"interactions": interactions,  # Number of interactions
+		"avg_time_per_interaction": avg_time,  # Avg time per interaction
+		"like_rate": like_rate,  # Like rate/ratio
+		"hesitation_score": hesitation_score,  # Hesitation score
 	}
-
-
-def _mode_of_swipe(swipe: AnalyticsSwipe) -> EventSide:
-	return EventSide.matcha if swipe.matcha_mode else EventSide.coffee
 
 
 def _seconds(value: timedelta | None) -> float:
@@ -70,11 +74,11 @@ def _tag_breakdown(swipes: Iterable[AnalyticsSwipe]) -> Dict[str, Any]:
 	return {"top_tags": top_tags, "total_tagged_swipes": tagged_swipes}
 
 
-def generate_dashboard(person: AnalyticsPerson, swipes: List[AnalyticsSwipe], gemini_client: Optional[GeminiClient] = None) -> Dashboard:
+def generate_dashboard(user_id: int, swipes: List[Analytics], gemini_client: Optional[GeminiClient] = None) -> Dashboard:
 	"""Aggregate raw swipes into a dashboard-friendly snapshot."""
 
-	coffee_metrics = _aggregate_mode(swipes, EventSide.coffee)
-	matcha_metrics = _aggregate_mode(swipes, EventSide.matcha)
+	matcha_metrics = aggregate_mode(swipes, True)
+	coffee_metrics = aggregate_mode(swipes, False)
 
 	total_swipes = coffee_metrics["interactions"] + matcha_metrics["interactions"]
 	overall_like_rate = _safe_div(
@@ -94,16 +98,8 @@ def generate_dashboard(person: AnalyticsPerson, swipes: List[AnalyticsSwipe], ge
 			total_swipes
 		)
 
-	# Keep person counters in sync with aggregated values.
-	person_updated = person.copy(update={
-		"coffee_time": coffee_metrics["time_spent_seconds"],
-		"coffee_interactions": coffee_metrics["interactions"],
-		"matcha_time": matcha_metrics["time_spent_seconds"],
-		"matcha_interactions": matcha_metrics["interactions"],
-	})
-
 	return Dashboard(
-		person=person_updated,
+		person=user_id,
 		coffee=coffee_metrics,
 		matcha=matcha_metrics,
 		total_swipes=total_swipes,

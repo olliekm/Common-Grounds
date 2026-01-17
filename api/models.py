@@ -65,13 +65,6 @@ class SwipeResponse(BaseModel):
     liked: bool
     matcha_mode: bool
 
-class AnalyticsPerson(BaseModel):
-    person_id: str
-    coffee_time: float
-    coffee_interactions: int
-    matcha_time: float
-    matcha_interactions: int
-
 class AnalyticsSwipe(BaseModel):
     event_id: str
     person_id: str
@@ -90,7 +83,7 @@ class Analytics(BaseModel):
     matcha_mode: Optional[bool] = None
 
 class Dashboard(BaseModel):
-    person: AnalyticsPerson
+    person: User
     coffee: Dict[str, Any]
     matcha: Dict[str, Any]
     total_swipes: int
