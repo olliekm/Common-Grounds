@@ -23,7 +23,6 @@ from .ml_models.gemini_client import GeminiClient
 def _safe_div(numerator: float, denominator: float) -> float:
 	return numerator / denominator if denominator else 0.0
 
-
 def aggregate_mode(swipes: Iterable[AnalyticsSwipe], matcha_mode: bool) -> Dict[str, Any]:
 	swipes_list = [s for s in swipes if s.matcha_mode == matcha_mode]
 	time_spent_seconds = sum(_seconds(s.time_spent) for s in swipes_list)
@@ -33,13 +32,11 @@ def aggregate_mode(swipes: Iterable[AnalyticsSwipe], matcha_mode: bool) -> Dict[
 	avg_time = _safe_div(time_spent_seconds, interactions)
 	like_rate = _safe_div(swipes_right, interactions)
 	
-	# Hesitation score: ratio of avg time on rejected items to avg time on liked items
-	# Higher score means user takes longer to reject (more hesitation)
 	left_times = [_seconds(s.time_spent) for s in swipes_list if not s.liked]
 	right_times = [_seconds(s.time_spent) for s in swipes_list if s.liked]
 	avg_left_time = _safe_div(sum(left_times), len(left_times))
 	avg_right_time = _safe_div(sum(right_times), len(right_times))
-	hesitation_score = _safe_div(avg_left_time, avg_right_time) if avg_right_time else 0.0
+	hesitation_score = _safe_div(avg_right_time, avg_left_time) if avg_left_time else 0.0
 
 	return {
 		"mode": matcha_mode,

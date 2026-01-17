@@ -3,6 +3,7 @@ Also contains similarity computation functions. Can be used for recommendation."
 
 from ml_models.embedding_toolbox import EmbeddingToolbox
 from ml_models.gemini_client import GeminiClient
+from analytics import aggregate_mode
 
 def update_user_embedding(user_blurb: str, user_tags: list[str], EmbeddingToolbox: EmbeddingToolbox,
                           analytics_text: str, GeminiClient: GeminiClient) -> list[float]:
