@@ -1,9 +1,12 @@
 .env
 venv/
 
-# Python cache
+# Mac
+.DS_Store
+
+# Python
 __pycache__/
 *.pyc
 
-# Local 3D assets
+# Local 3D assets 
 frontend/public/glb/
