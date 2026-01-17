@@ -71,4 +71,4 @@ def recommend_events(event_embeddings_dict: dict[int, list[float]], seen: list[i
         EmbeddingToolbox=EmbeddingToolbox,
         top_k=top_k
     )
-    
+    return top_events
