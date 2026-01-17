@@ -13,6 +13,7 @@ export default function CommonGrounds() {
   // Your FastAPI backend URL
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+  /*
   useEffect(() => {
     loadUserData();
   }, [router]);
@@ -60,6 +61,7 @@ export default function CommonGrounds() {
       </div>
     );
   }
+  */
 
   return (
     <div className="container">
@@ -76,11 +78,6 @@ export default function CommonGrounds() {
           </div>
           <h1>Common Grounds</h1>
         </div>
-        
-        <div className="header-right">
-          <button className="notification-btn">🔔</button>
-          <div className="avatar"></div>
-        </div>
       </header>
 
       {/* Main Content */}
@@ -92,8 +89,8 @@ export default function CommonGrounds() {
           </p>
           
           <div className="cups-container">
-            <div className="cup cup-matcha">😊</div>
-            <div className="cup cup-coffee">😌</div>
+            <div className="cup cup-matcha"></div>
+            <div className="cup cup-coffee"></div>
           </div>
 
           <h2 className="title">
@@ -101,7 +98,7 @@ export default function CommonGrounds() {
           </h2>
           
           <p className="description">
-            Where personal peace meets professional power. Which space are we visiting first?
+            Discover your blend.
           </p>
         </div>
 
@@ -131,7 +128,7 @@ export default function CommonGrounds() {
             <h3 className="card-title">Personal Bloom</h3>
             
             <p className="card-description">
-              {userData?.matcha_blurb || 'Nurture your soul. Find quiet moments, explore local hobbies, and tend to your personal garden of wellbeing.'}
+              {userData?.matcha_blurb || 'Tend to your personal garden of wellbeing.'}
             </p>
 
             <div className="tags">
@@ -179,7 +176,7 @@ export default function CommonGrounds() {
             <h3 className="card-title">Professional Pulse</h3>
             
             <p className="card-description">
-              {userData?.coffee_blurb || 'Elevate your career. Crush those milestones, organize your workflow, and stay sharp with professional tools.'}
+              {userData?.coffee_blurb || 'Brew your dreamsElevate your career.'}
             </p>
 
             <div className="tags">
@@ -206,9 +203,8 @@ export default function CommonGrounds() {
         <div className="search-container">
           <div className="search-wrapper">
             <div className="search-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8"/>
-                <path d="m21 21-4.35-4.35"/>
+              <svg className="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM18 18l-4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
               </svg>
             </div>
             <input
