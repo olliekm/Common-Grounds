@@ -46,3 +46,22 @@ class SwipeResponse(BaseModel):
     user_id: str
     direction: SwipeDirection
     matched: bool = False
+
+class AnalyticsPerson(BaseModel):
+    person_id: str
+    coffee_time: float
+    coffee_interactions: int
+    matcha_time: float
+    matcha_interactions: int
+
+class AnalyticsSwipe(BaseModel):
+    event_id: str
+    person_id: str
+    tags: Optional[list[str]] = None
+    time_spent: Optional[datetime.timedelta]
+    liked: bool
+    matcha_mode: bool
+
+class Dashboard(BaseModel):
+    person: AnalyticsPerson
+    
