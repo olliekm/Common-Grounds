@@ -57,6 +57,7 @@ def get_event(event_id: int):
 @app.post("/swipe", response_model=SwipeResponse)
 def swipe_event(swipe: SwipeRequest):
     """Record a swipe (left/right) on an event for a user."""
+    # TODO add id to seen on user object
     time_spent = (swipe.view_end - swipe.view_start).total_seconds()
     liked = swipe.direction == "right"
 
