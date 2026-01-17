@@ -4,8 +4,16 @@ Also contains similarity computation functions. Can be used for recommendation."
 from ml_models.embedding_toolbox import EmbeddingToolbox
 from ml_models.gemini_client import GeminiClient
 
-def update_user_embedding(user_blurb: str, user_tags: list[str], EmbeddingToolbox: EmbeddingToolbox) -> list[float]:
+def update_user_embedding(user_blurb: str, user_tags: list[str], EmbeddingToolbox: EmbeddingToolbox,
+                          analytics_text: str, GeminiClient: GeminiClient) -> list[float]:
     """Updates the user embedding based on their blurb and tags."""
+    adjusted_blurb = user_blurb + " " + " ".join([f"#{tag}" for tag in user_tags])
+    adjusted_blurb = GeminiClient.augment_user_description(
+        base_description=adjusted_blurb,
+        analytics_text=analytics_text
+    )
+    user_embedding = EmbeddingToolbox.encode(adjusted_blurb, user_tags)
+    return user_embedding.tolist()
 
 def get_top_events(user_embedding: list[float], event_embeddings_dict: dict[int, list[float]], 
                    seen: list[int], EmbeddingToolbox: EmbeddingToolbox, top_k=5) -> list[int]:
