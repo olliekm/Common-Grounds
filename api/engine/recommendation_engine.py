@@ -16,7 +16,7 @@ def update_user_embedding(user_blurb: str, user_tags: list[str], EmbeddingToolbo
     return user_embedding.tolist()
 
 def get_top_events(user_embedding: list[float], event_embeddings_dict: dict[int, list[float]], 
-                   seen: list[int], EmbeddingToolbox: EmbeddingToolbox, top_k=5) -> list[int]:
+                   seen: list[int], EmbeddingToolbox: EmbeddingToolbox, top_k: int) -> list[int]:
     """
     Given a user embedding and a list of event embeddings, return the top K
     most similar events based on cosine similarity.
@@ -45,4 +45,17 @@ def get_top_events(user_embedding: list[float], event_embeddings_dict: dict[int,
             similarities.append((key, compatability))
     
     similarities.sort(key=lambda x: x[1], reverse=True)
-    return similarities[:top_k]
+    sorted_ids = [event_id for event_id, _ in similarities]
+    return sorted[:top_k]
+
+def recommend_events(event_embeddings_dict: dict[int, list[float]], seen: list[int], EmbeddingToolbox: EmbeddingToolbox, 
+                     user_blurb: str, user_tags: list[str], GeminiClient: GeminiClient,top_k=5) -> list[int]:
+    """Recommends events to the user based on their embedding and event embeddings."""
+    top_events = get_top_events(
+        user_embedding=user_embedding,
+        event_embeddings_dict=event_embeddings_dict,
+        seen=seen,
+        EmbeddingToolbox=EmbeddingToolbox,
+        top_k=top_k
+    )
+    
