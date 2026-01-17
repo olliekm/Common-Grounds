@@ -9,15 +9,16 @@ from __future__ import annotations
 
 from collections import Counter
 from datetime import timedelta
-from typing import Iterable, List, Dict, Any
+from typing import Iterable, List, Dict, Any, Optional
 
-from .models import (
+from ..models import (
 	AnalyticsPerson,
 	AnalyticsSwipe,
 	Dashboard,
 	EventSide,
 	SwipeDirection,
 )
+from .ml_models.gemini_client import GeminiClient
 
 
 def _safe_div(numerator: float, denominator: float) -> float:
@@ -69,7 +70,7 @@ def _tag_breakdown(swipes: Iterable[AnalyticsSwipe]) -> Dict[str, Any]:
 	return {"top_tags": top_tags, "total_tagged_swipes": tagged_swipes}
 
 
-def generate_dashboard(person: AnalyticsPerson, swipes: List[AnalyticsSwipe]) -> Dashboard:
+def generate_dashboard(person: AnalyticsPerson, swipes: List[AnalyticsSwipe], gemini_client: Optional[GeminiClient] = None) -> Dashboard:
 	"""Aggregate raw swipes into a dashboard-friendly snapshot."""
 
 	coffee_metrics = _aggregate_mode(swipes, EventSide.coffee)
@@ -82,7 +83,11 @@ def generate_dashboard(person: AnalyticsPerson, swipes: List[AnalyticsSwipe]) ->
 	)
 
 	tags = _tag_breakdown(swipes)
-	ai_insights = _ai_insights(coffee_metrics, matcha_metrics, tags, total_swipes)
+
+	# Generate AI insights using GeminiClient if provided
+	ai_insights: List[str] = []
+	if gemini_client:
+		ai_insights = gemini_client.analyze_analytics(coffee_metrics, matcha_metrics, tags, total_swipes)
 
 	# Keep person counters in sync with aggregated values.
 	person_updated = person.copy(update={
@@ -101,41 +106,6 @@ def generate_dashboard(person: AnalyticsPerson, swipes: List[AnalyticsSwipe]) ->
 		tags=tags,
 		ai_insights=ai_insights,
 	)
-
-
-# def _ai_insights(
-# 	coffee: Dict[str, Any],
-# 	matcha: Dict[str, Any],
-# 	tags: Dict[str, Any],
-# 	total_swipes: int,
-# ) -> List[str]:
-# 	"""Heuristic insights; replace with an LLM call if desired."""
-
-# 	insights: List[str] = []
-
-# 	if coffee["like_rate"] > matcha["like_rate"] + 0.15:
-# 		insights.append(
-# 			f"Users prefer coffee-mode content by {(coffee['like_rate'] - matcha['like_rate']):.0%}."
-# 		)
-# 	elif matcha["like_rate"] > coffee["like_rate"] + 0.15:
-# 		insights.append(
-# 			f"Users prefer matcha-mode content by {(matcha['like_rate'] - coffee['like_rate']):.0%}."
-# 		)
-
-# 	if coffee["avg_time_per_interaction"] < 2 and coffee["like_rate"] > 0.6:
-# 		insights.append("Coffee-mode decisions are quick and positive—surface more premium matches early.")
-# 	if matcha["avg_time_per_interaction"] > 5 and matcha["like_rate"] < 0.35:
-# 		insights.append("Matcha-mode users hesitate but rarely like—consider simplifying card info or visuals.")
-
-# 	if total_swipes and tags.get("top_tags"):
-# 		top_tag, count = tags["top_tags"][0]
-# 		share = count / total_swipes
-# 		insights.append(f"Tag '{top_tag}' drives {share:.0%} of engagement; expand this theme.")
-
-# 	if not insights:
-# 		insights.append("Engagement is balanced; continue A/B testing layouts and content density.")
-
-# 	return insights
 
 
 def swipe_direction(swipe: AnalyticsSwipe) -> SwipeDirection:
