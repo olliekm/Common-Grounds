@@ -1,64 +1,77 @@
-from typing import Optional
+from typing import Optional, Any
 from datetime import datetime
 from enum import Enum
 
 from pydantic import BaseModel
 
 
+# Enums
 class SwipeDirection(str, Enum):
     left = "left"
     right = "right"
 
 
-class EventSide(str, Enum):
-    matcha = "matcha"  # hobbies/fun
-    coffee = "coffee"  # professionalism/education
+# User models
+class User(BaseModel):
+    id: int
+    created_at: datetime
+    name: Optional[str] = None
+    matcha_blurb: Optional[str] = None
+    coffee_blurb: Optional[str] = None
+    tags: Optional[list[Any]] = None
+    embeddings: Optional[list[Any]] = None
+    seen: Optional[list[Any]] = None
+
+
+class UserCreate(BaseModel):
+    name: Optional[str] = None
+    matcha_blurb: Optional[str] = None
+    coffee_blurb: Optional[str] = None
+    tags: Optional[list[Any]] = None
+
+
+# Event models
+class Event(BaseModel):
+    id: int
+    created_at: datetime
+    title: Optional[str] = None
+    description: Optional[str] = None
+    tags: Optional[list[Any]] = None
+    mode: Optional[list[Any]] = None  # matcha/coffee modes
+    embeddings: Optional[list[Any]] = None
 
 
 class EventCreate(BaseModel):
     title: str
-    side: EventSide
     description: Optional[str] = None
-    location: Optional[str] = None
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
-    tags: Optional[list[str]] = None
+    tags: Optional[list[Any]] = None
+    mode: Optional[list[Any]] = None
 
 
-class Event(BaseModel):
-    id: str
-    title: str
-    side: EventSide
-    description: Optional[str] = None
-    location: Optional[str] = None
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
-    tags: Optional[list[str]] = None
-    created_at: datetime
-
-
+# Analytics/Swipe models
 class SwipeRequest(BaseModel):
+    user_id: int
+    event_id: int
     direction: SwipeDirection
+    view_start: datetime
+    view_end: datetime
+    matcha_mode: bool
 
 
 class SwipeResponse(BaseModel):
-    event_id: str
-    user_id: str
-    direction: SwipeDirection
-    matched: bool = False
-
-class AnalyticsPerson(BaseModel):
-    person_id: str
-    coffee_time: float
-    coffee_interactions: int
-    matcha_time: float
-    matcha_interactions: int
-
-class AnalyticsSwipe(BaseModel):
-    event_id: str
-    person_id: str
-    tags: Optional[list[str]] = None
-    time_spent: Optional[datetime.timedelta]
+    id: int
+    user_id: int
+    event_id: int
+    time_spent: float
     liked: bool
     matcha_mode: bool
-    
+
+
+class Analytics(BaseModel):
+    id: int
+    created_at: datetime
+    user_id: Optional[int] = None
+    event_id: Optional[int] = None
+    time_spent: Optional[float] = None
+    liked: Optional[bool] = None
+    matcha_mode: Optional[bool] = None
