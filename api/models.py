@@ -10,8 +10,14 @@ class SwipeDirection(str, Enum):
     right = "right"
 
 
+class EventSide(str, Enum):
+    matcha = "matcha"  # hobbies/fun
+    coffee = "coffee"  # professionalism/education
+
+
 class EventCreate(BaseModel):
     title: str
+    side: EventSide
     description: Optional[str] = None
     location: Optional[str] = None
     start_time: Optional[datetime] = None
@@ -22,6 +28,7 @@ class EventCreate(BaseModel):
 class Event(BaseModel):
     id: str
     title: str
+    side: EventSide
     description: Optional[str] = None
     location: Optional[str] = None
     start_time: Optional[datetime] = None

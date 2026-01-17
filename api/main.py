@@ -2,7 +2,7 @@ from datetime import datetime
 
 from fastapi import FastAPI, HTTPException
 
-from models import Event, EventCreate, SwipeRequest, SwipeResponse
+from models import Event, EventCreate, EventSide, SwipeRequest, SwipeResponse
 
 
 app = FastAPI()
@@ -11,6 +11,7 @@ app = FastAPI()
 # In-memory storage (replace with database)
 events_db: dict[str, Event] = {}
 swipes_db: list[dict] = []
+
 
 
 @app.post("/events", response_model=Event)
@@ -27,14 +28,14 @@ def create_event(event: EventCreate):
 
 
 @app.get("/events", response_model=list[Event])
-def get_events(user_id: str, limit: int = 10):
+def get_events(user_id: str, side: EventSide, limit: int = 10):
     """
-    Get events for a user. The user_id is passed to the recommendation
-    engine to return personalized event suggestions.
+    Get events for a user filtered by side (matcha or coffee).
+    The user_id is passed to the recommendation engine for personalized suggestions.
     """
     # TODO: Integrate with recommendation engine using user_id
-    # For now, return all events (limited)
-    return list(events_db.values())[:limit]
+    filtered = [e for e in events_db.values() if e.side == side]
+    return filtered[:limit]
 
 
 @app.get("/events/{event_id}", response_model=Event)
