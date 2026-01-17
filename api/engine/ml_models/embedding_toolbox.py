@@ -1,6 +1,6 @@
 from sentence_transformers import SentenceTransformer
 import numpy as np
-
+from typing import Optional
 """
 Embedding Toolbox using Sentence Transformers
 
@@ -17,7 +17,7 @@ class EmbeddingToolbox:
         """
         self.model = SentenceTransformer(self.model)
 
-    def encode(self, blurb: str, tags: list[str]) -> np.ndarray:
+    def encode(self, blurb: str, tags: list[str], title: Optional[str] = None) -> np.ndarray:
         """
         Encodes the text
         
@@ -34,7 +34,11 @@ class EmbeddingToolbox:
         if not isinstance(tags, list):
             raise TypeError("encode expects a list of tags")
 
-        new_text = blurb + " " + " ".join([f"#{tag}" for tag in tags])
+        new_text = ""
+        if title is None:
+            new_text = blurb + " " + " ".join([f"#{tag}" for tag in tags])
+        else:
+            new_text = title + blurb + " " + " ".join([f"#{tag}" for tag in tags])
         embedding = self.model.encode(new_text, convert_to_numpy=True, normalize_embeddings=True)
         return embedding
     
