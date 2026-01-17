@@ -142,7 +142,8 @@ def swipe_event(swipe: SwipeRequest):
         liked=liked,
         matcha_mode=swipe.matcha_mode,
     )
-
+# TODO: Create event endpoint
+# TODO: Emdbed event
 
 # Users
 @app.post("/users", response_model=User)
