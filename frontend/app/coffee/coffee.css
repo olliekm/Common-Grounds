@@ -216,22 +216,18 @@ body {
 
 /* Hero Section */
 .hero {
-  background: linear-gradient(135deg, var(--cream) 0%, var(--cream-dark) 100%);
-  padding: 20px 0;
+  padding: 20px 0; 
   text-align: center;
 }
 
 .hero-title {
-  font-size: 42px;
-  font-weight: 700;
-  color: var(--coffee-dark);
+  font-size: 42px;  
   margin-bottom: 12px;
 }
 
 .hero-subtitle {
   font-size: 18px;
-  color: var(--gray-600);
-  margin-bottom: 32px;
+  margin-bottom: 32px; 
 }
 
 .search-bar {

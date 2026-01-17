@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import './page.css';
 
 export default function CommonGrounds() {
@@ -78,15 +79,17 @@ export default function CommonGrounds() {
           </div>
           <h1>Common Grounds</h1>
         </div>
+        
+        <div className="header-right">
+          <div className="avatar"></div>
+        </div>
       </header>
 
       {/* Main Content */}
       <main className="main">
         {/* Hero Section */}
         <div className="hero">
-          <p className="subtitle">
-            Ready to brew some balance today{userData?.name ? `, ${userData.name}` : ''}?
-          </p>
+          <p className="subtitle">Ready to brew some balance today?</p>
           
           <div className="cups-container">
             <div className="cup cup-matcha"></div>
@@ -98,104 +101,95 @@ export default function CommonGrounds() {
           </h2>
           
           <p className="description">
-            Discover your blend.
+            Find your perfect blend. 
           </p>
         </div>
 
         {/* Cards */}
         <div className="cards-grid">
-          {/* Personal Bloom Card */}
+          {/* Matcha card */}
           <div 
             className={`card card-personal ${hoveredCard === 'personal' ? 'card-hover' : ''}`}
             onMouseEnter={() => setHoveredCard('personal')}
             onMouseLeave={() => setHoveredCard(null)}
-            onClick={() => router.push('/matcha')}
           >
             <div className="card-header">
               <div className="card-icon">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7a9d8f" strokeWidth="2">
-                  <path d="M12 2a9 9 0 0 0-9 9c0 5.25 9 13 9 13s9-7.75 9-13a9 9 0 0 0-9-9z"/>
-                  <circle cx="12" cy="11" r="3"/>
-                </svg>
-              </div>
-              <div className="card-icon-secondary">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7a9d8f" strokeWidth="2">
-                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                <svg 
+                  width="28"           
+                  height="28" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="#7a9d8f"    
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+                  <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
                 </svg>
               </div>
             </div>
 
-            <h3 className="card-title">Personal Bloom</h3>
+            <h3 className="card-title">Matcha Mode</h3>
             
             <p className="card-description">
-              {userData?.matcha_blurb || 'Tend to your personal garden of wellbeing.'}
+              Nurture your soul. Tend to your personal garden of wellbeing.
             </p>
 
             <div className="tags">
-              {userData?.tags && userData.tags.length > 0 ? (
-                userData.tags.slice(0, 3).map((tag, index) => (
-                  <span key={index} className="tag">{tag}</span>
-                ))
-              ) : (
-                <>
-                  <span className="tag">Yoga Flow</span>
-                  <span className="tag">Book Club</span>
-                  <span className="tag">Meditation</span>
-                </>
-              )}
+              <span className="tag">Yoga Flow</span>
+              <span className="tag">Book Club</span>
+              <span className="tag">Meditation</span>
             </div>
 
-            <button className="button button-matcha">
-              Enter Matcha Mode <span>✨</span>
-            </button>
+            <Link href="/matcha" className="button button-matcha">
+              Enter Matcha Mode 
+            </Link>
           </div>
 
-          {/* Professional Pulse Card */}
+          {/* Coffee Card */}
           <div 
             className={`card card-professional ${hoveredCard === 'professional' ? 'card-hover' : ''}`}
             onMouseEnter={() => setHoveredCard('professional')}
             onMouseLeave={() => setHoveredCard(null)}
-            onClick={() => router.push('/coffee')}
           >
             <div className="card-header">
               <div className="card-icon">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#8b6f5c" strokeWidth="2">
-                  <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                  <path d="M2 17l10 5 10-5"/>
-                  <path d="M2 12l10 5 10-5"/>
-                </svg>
-              </div>
-              <div className="card-icon-secondary">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#8b6f5c" strokeWidth="2">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/>
-                  <circle cx="12" cy="12" r="1"/>
+                <svg 
+                  width="28" 
+                  height="28" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="#B9967C" 
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
+                  <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
+                  <line x1="6" y1="1" x2="6" y2="4" />
+                  <line x1="10" y1="1" x2="10" y2="4" />
+                  <line x1="14" y1="1" x2="14" y2="4" />
                 </svg>
               </div>
             </div>
 
-            <h3 className="card-title">Professional Pulse</h3>
+            <h3 className="card-title">Coffee Mode</h3>
             
             <p className="card-description">
-              {userData?.coffee_blurb || 'Brew your dreamsElevate your career.'}
+              Let's brew success.
             </p>
 
             <div className="tags">
-              {userData?.tags && userData.tags.length > 0 ? (
-                userData.tags.slice(3, 6).map((tag, index) => (
-                  <span key={index} className="tag">{tag}</span>
-                ))
-              ) : (
-                <>
-                  <span className="tag">Design Review</span>
-                  <span className="tag">Project Alpha</span>
-                  <span className="tag">Team Standup</span>
-                </>
-              )}
+              <span className="tag">Design Review</span>
+              <span className="tag">Project Alpha</span>
+              <span className="tag">Team Standup</span>
             </div>
 
-            <button className="button button-coffee">
-              Enter Coffee Mode <span>⚡</span>
-            </button>
+            <Link href="/coffee" className="button button-coffee">
+              Enter Coffee Mode
+            </Link>
           </div>
         </div>
 
@@ -203,8 +197,9 @@ export default function CommonGrounds() {
         <div className="search-container">
           <div className="search-wrapper">
             <div className="search-icon">
-              <svg className="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM18 18l-4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
               </svg>
             </div>
             <input
