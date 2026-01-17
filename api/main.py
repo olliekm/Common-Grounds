@@ -1,74 +1,107 @@
-from datetime import datetime
+import os
+from typing import Optional
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from supabase import create_client, Client
 
-from models import Event, EventCreate, EventSide, SwipeRequest, SwipeResponse
+load_dotenv()
+
+from models import (
+    Event, EventCreate,
+    User, UserCreate,
+    SwipeRequest, SwipeResponse,
+    Analytics,
+)
 
 
 app = FastAPI()
 
+# Supabase client
+supabase: Client = create_client(
+    os.environ.get("SUPABASE_URL", ""),
+    os.environ.get("SUPABASE_KEY", "")
+)
 
-# In-memory storage (replace with database)
-events_db: dict[str, Event] = {}
-swipes_db: list[dict] = []
 
-
-
+# Events
 @app.post("/events", response_model=Event)
 def create_event(event: EventCreate):
     """Create a new event."""
-    event_id = f"evt_{len(events_db) + 1}"
-    new_event = Event(
-        id=event_id,
-        **event.model_dump(),
-        created_at=datetime.now()
-    )
-    events_db[event_id] = new_event
-    return new_event
+    data = supabase.table("events").insert(event.model_dump()).execute()
+    return data.data[0]
 
 
 @app.get("/events", response_model=list[Event])
-def get_events(user_id: str, side: EventSide, limit: int = 10):
+def get_events(user_id: int, matcha_mode: bool, limit: int = 10):
     """
-    Get events for a user filtered by side (matcha or coffee).
+    Get events for a user filtered by mode (matcha or coffee).
     The user_id is passed to the recommendation engine for personalized suggestions.
     """
     # TODO: Integrate with recommendation engine using user_id
-    filtered = [e for e in events_db.values() if e.side == side]
-    return filtered[:limit]
+    # TODO: Filter out events user has already seen
+    data = supabase.table("events").select("*").limit(limit).execute()
+    return data.data
 
 
 @app.get("/events/{event_id}", response_model=Event)
-def get_event(event_id: str):
+def get_event(event_id: int):
     """Get a specific event by ID."""
-    if event_id not in events_db:
+    data = supabase.table("events").select("*").eq("id", event_id).execute()
+    if not data.data:
         raise HTTPException(status_code=404, detail="Event not found")
-    return events_db[event_id]
+    return data.data[0]
 
 
-@app.post("/events/{event_id}/swipe", response_model=SwipeResponse)
-def swipe_event(event_id: str, user_id: str, swipe: SwipeRequest):
-    """
-    Record a swipe (left/right) on an event for a user.
-    This feeds into the recommendation engine.
-    """
-    if event_id not in events_db:
-        raise HTTPException(status_code=404, detail="Event not found")
+# Swipes/Analytics
+@app.post("/swipe", response_model=SwipeResponse)
+def swipe_event(swipe: SwipeRequest):
+    """Record a swipe (left/right) on an event for a user."""
+    time_spent = (swipe.view_end - swipe.view_start).total_seconds()
+    liked = swipe.direction == "right"
 
-    swipe_record = {
-        "event_id": event_id,
-        "user_id": user_id,
-        "direction": swipe.direction,
-        "timestamp": datetime.now()
+    analytics_record = {
+        "user_id": swipe.user_id,
+        "event_id": swipe.event_id,
+        "time_spent": time_spent,
+        "liked": liked,
+        "matcha_mode": swipe.matcha_mode,
     }
-    swipes_db.append(swipe_record)
-
-    # TODO: Feed swipe data to recommendation engine
-    # TODO: Check for matches if direction is "right"
+    data = supabase.table("analytics").insert(analytics_record).execute()
 
     return SwipeResponse(
-        event_id=event_id,
-        user_id=user_id,
-        direction=swipe.direction,
-        matched=False  # TODO: Implement match logic
+        id=data.data[0]["id"],
+        user_id=swipe.user_id,
+        event_id=swipe.event_id,
+        time_spent=time_spent,
+        liked=liked,
+        matcha_mode=swipe.matcha_mode,
     )
+
+
+# Users
+@app.post("/users", response_model=User)
+def create_user(user: UserCreate):
+    """Create a new user."""
+    data = supabase.table("users").insert(user.model_dump()).execute()
+    return data.data[0]
+
+
+@app.get("/users/{user_id}", response_model=User)
+def get_user(user_id: int):
+    """Get a user by ID."""
+    data = supabase.table("users").select("*").eq("id", user_id).execute()
+    if not data.data:
+        raise HTTPException(status_code=404, detail="User not found")
+    return data.data[0]
+
+
+# Analytics
+@app.get("/users/{user_id}/analytics", response_model=list[Analytics])
+def get_user_analytics(user_id: int, matcha_mode: Optional[bool] = None):
+    """Get analytics for a user, optionally filtered by mode."""
+    query = supabase.table("analytics").select("*").eq("user_id", user_id)
+    if matcha_mode is not None:
+        query = query.eq("matcha_mode", matcha_mode)
+    data = query.execute()
+    return data.data
