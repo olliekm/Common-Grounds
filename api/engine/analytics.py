@@ -34,7 +34,7 @@ def aggregate_mode(swipes: Iterable[AnalyticsSwipe], matcha_mode: bool) -> Dict[
 	like_rate = _safe_div(swipes_right, interactions)
 	
 	# Hesitation score: ratio of avg time on rejected items to avg time on liked items
-	# Higher score means user takes longer to reject (more hesitation)
+	# Higher score means user takes longer to accept (more hesitation)
 	left_times = [_seconds(s.time_spent) for s in swipes_list if not s.liked]
 	right_times = [_seconds(s.time_spent) for s in swipes_list if s.liked]
 	avg_left_time = _safe_div(sum(left_times), len(left_times))
