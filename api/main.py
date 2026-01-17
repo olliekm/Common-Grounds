@@ -92,6 +92,8 @@ def swipe_event(swipe: SwipeRequest):
 @app.post("/users", response_model=User)
 def create_user(user: UserCreate):
     """Create a new user."""
+    #TODO call encode on tags with matcha_blur
+    #TODO call encode on tags with coffee blurb
     data = supabase.table("users").insert(user.model_dump()).execute()
     return data.data[0]
 
