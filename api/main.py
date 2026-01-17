@@ -96,7 +96,6 @@ def get_event(event_id: int):
 @app.post("/swipe", response_model=SwipeResponse)
 def swipe_event(swipe: SwipeRequest):
     """Record a swipe (left/right) on an event for a user."""
-    # TODO add id to seen on user object
     time_spent = (swipe.view_end - swipe.view_start).total_seconds()
     liked = swipe.direction == "right"
 
@@ -108,6 +107,12 @@ def swipe_event(swipe: SwipeRequest):
         "matcha_mode": swipe.matcha_mode,
     }
     data = supabase.table("analytics").insert(analytics_record).execute()
+
+    # Append event_id to user's seen array
+    user_data = supabase.table("users").select("seen").eq("id", swipe.user_id).execute()
+    seen = user_data.data[0]["seen"] or []
+    seen.append(swipe.event_id)
+    supabase.table("users").update({"seen": seen}).eq("id", swipe.user_id).execute()
 
     return SwipeResponse(
         id=data.data[0]["id"],
