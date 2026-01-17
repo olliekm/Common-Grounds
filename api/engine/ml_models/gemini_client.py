@@ -54,11 +54,49 @@ Return plain text only.
 
         response = self.model.generate_content(prompt)
         return response.text.strip()
-    
-    def analyze_analytics(self, analytic: dict) -> str:
+
+    def _build_analytics_prompt(self, coffee: dict, matcha: dict, tags: dict, total_swipes: int) -> str:
         """
-        Prompts Gemini to analyze an instance of an analytic event and return a concise summary.
+        Builds the prompt for Gemini to analyze dashboard metrics.
         """
-        prompt = self.analytic_prompt(analytic)
+        top_tags_text = ""
+        if tags.get("top_tags"):
+            top_tags_list = ", ".join([f"{tag[0]} ({tag[1]} swipes)" for tag in tags["top_tags"][:3]])
+            top_tags_text = f"\nTop tags: {top_tags_list}"
+
+        analytics_summary = f"""
+Dashboard Summary:
+- Total swipes: {total_swipes}
+- Coffee mode: {coffee['interactions']} interactions, {coffee['like_rate']:.0%} like rate, {coffee['avg_time_per_interaction']:.1f}s avg time
+- Matcha mode: {matcha['interactions']} interactions, {matcha['like_rate']:.0%} like rate, {matcha['avg_time_per_interaction']:.1f}s avg time{top_tags_text}
+"""
+
+        return f"""
+You are an analytics expert analyzing user engagement data from a coffee/matcha matching platform.
+
+{analytics_summary}
+
+Task:
+Generate 2-3 concise, actionable insights from this engagement data.
+Focus on:
+1. Mode preference trends
+2. Interaction patterns and time spent
+3. Top tag signals and recommendations
+
+Provide insights as a numbered list. Be specific and data-driven.
+Return plain text only.
+"""
+
+    def analyze_analytics(self, coffee: dict, matcha: dict, tags: dict, total_swipes: int) -> list[str]:
+        """
+        Calls Gemini to generate AI insights from dashboard metrics.
+        Returns a list of insight strings.
+        """
+        prompt = self._build_analytics_prompt(coffee, matcha, tags, total_swipes)
         response = self.generate_content(prompt)
-        return response.text.strip()
+        
+        # Parse the response into individual insights
+        text = response.text.strip()
+        insights = [line.strip() for line in text.split("\n") if line.strip()]
+        
+        return insights if insights else ["Unable to generate insights at this time."]
