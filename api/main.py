@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from supabase import create_client, Client
 import google.generativeai as genai
+import numpy as np
 
 from engine.ml_models.gemini_client import GeminiClient
 from engine.ml_models.embedding_toolbox import EmbeddingToolbox
@@ -105,9 +106,16 @@ def swipe_event(swipe: SwipeRequest):
 @app.post("/users", response_model=User)
 def create_user(user: UserCreate):
     """Create a new user."""
-    #TODO call encode on tags with matcha_blur
-    #TODO call encode on tags with coffee blurb
-    data = supabase.table("users").insert(user.model_dump()).execute()
+    coffee_embeddings = embedding_toolbox.encode(user.coffee_blurb, user.tags).tolist()
+    matcha_embeddings = embedding_toolbox.encode(user.matcha_blurb, user.tags).tolist()
+
+    user_data = user.model_dump()
+    user_data["embeddings"] = {
+        "coffee": coffee_embeddings,
+        "matcha": matcha_embeddings,
+    }
+
+    data = supabase.table("users").insert(user_data).execute()
     return data.data[0]
 
 
