@@ -4,6 +4,7 @@ from typing import Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from supabase import create_client, Client
+from fastapi.middleware.cors import CORSMiddleware 
 
 load_dotenv()
 
