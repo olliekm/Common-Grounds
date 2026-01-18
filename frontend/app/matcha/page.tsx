@@ -1,9 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import FloatingAvatar from '@/components/FloatingAvatar';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import './matcha.css';
+
+const FloatingAvatar = dynamic(
+  () => import('@/components/FloatingAvatar'),
+  { ssr: false }
+);
 
 export default function MatchaMode() {
   const [searchQuery, setSearchQuery] = useState('');

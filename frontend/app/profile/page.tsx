@@ -31,7 +31,7 @@ export default function ProfilePage() {
 
     setUserData(mockUser);
     setLoading(false);
-S
+
     // TODO: replace with real API call
     // const userId = localStorage.getItem('userId');
     // const response = await fetch(`${API_URL}/users/${userId}`);
