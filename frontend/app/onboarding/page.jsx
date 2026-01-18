@@ -7,6 +7,8 @@ import './onboarding.css';
 export default function Onboarding() {
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     school: '',
@@ -14,6 +16,9 @@ export default function Onboarding() {
     personalInterests: [],
     professionalInterests: []
   });
+
+  // Your FastAPI backend URL
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
   const personalOptions = [
     'Yoga Flow', 'Book Club', 'Meditation', 'Cooking', 'Hiking',
@@ -48,13 +53,73 @@ export default function Onboarding() {
     }
   };
 
-  const handleFinish = () => {
-    // Save to localStorage
-    localStorage.setItem('userProfile', JSON.stringify(formData));
-    localStorage.setItem('onboardingComplete', 'true');
+  // Generate matcha blurb from personal data
+  const generateMatchaBlurb = () => {
+    const interests = formData.personalInterests.slice(0, 3).join(', ');
+    return `${formData.name} enjoys ${interests.toLowerCase()}. Looking to explore creative hobbies and unwind.`;
+  };
+
+  // Generate coffee blurb from professional data
+  const generateCoffeeBlurb = () => {
+    const { school, major, professionalInterests } = formData;
+    const skills = professionalInterests.slice(0, 3).join(', ');
+    return `${major} student at ${school}. Interested in ${skills.toLowerCase()}. Seeking mentorship and professional growth opportunities.`;
+  };
+
+  // Generate tags from all interests
+  const generateTags = () => {
+    const allInterests = [
+      ...formData.personalInterests,
+      ...formData.professionalInterests,
+      formData.major,
+      formData.school
+    ];
     
-    // Redirect to main page
-    router.push('/');
+    return [...new Set(allInterests.filter(tag => tag && tag.trim()))];
+  };
+
+  const handleFinish = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      // Generate blurbs and tags
+      const matchaBlurb = generateMatchaBlurb();
+      const coffeeBlurb = generateCoffeeBlurb();
+      const tags = generateTags();
+
+      // Call your FastAPI backend
+      const response = await fetch(`${API_URL}/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          matcha_blurb: matchaBlurb,
+          coffee_blurb: coffeeBlurb,
+          tags: tags
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create user');
+      }
+
+      const userData = await response.json();
+
+      // Save user ID and data to localStorage
+      localStorage.setItem('userId', userData.id.toString());
+      localStorage.setItem('userName', userData.name);
+      localStorage.setItem('onboardingComplete', 'true');
+
+      // Redirect to main page
+      router.push('/');
+    } catch (err) {
+      console.error('Error creating user:', err);
+      setError('Failed to save your profile. Please try again.');
+      setLoading(false);
+    }
   };
 
   const canProceed = () => {
@@ -78,13 +143,17 @@ export default function Onboarding() {
           <p className="progress-text">Step {step} of 4</p>
         </div>
 
-        {/* Name */}
+        {/* Error Message */}
+        {error && (
+          <div className="error-message">
+            {error}
+          </div>
+        )}
+
+        {/* Step 1: Name */}
         {step === 1 && (
           <div className="step-content">
-            <div className="cups-container">
-                <div className="cup cup-matcha"></div>
-                <div className="cup cup-coffee"></div>
-            </div>
+            <div className="step-icon">👋</div>
             <h2 className="step-title">Welcome to Common Grounds!</h2>
             <p className="step-description">Let's start with your name</p>
             
@@ -102,15 +171,15 @@ export default function Onboarding() {
           </div>
         )}
 
-        {/* School & Major */}
+        {/* Step 2: School & Major */}
         {step === 2 && (
           <div className="step-content">
-            <div className="step-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-graduation-cap-icon lucide-graduation-cap">
-                    <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/>
-                    <path d="M22 10v6"/>
-                    <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>
-                </svg>
+            <div className="step-icon icon-container">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#7a9d8f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/>
+                <path d="M22 10v6"/>
+                <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>
+              </svg>
             </div>
             <h2 className="step-title">Tell us about your studies</h2>
             <p className="step-description">Where are you learning and growing?</p>
@@ -139,7 +208,7 @@ export default function Onboarding() {
           </div>
         )}
 
-        {/* Personal Interests */}
+        {/* Step 3: Personal Interests */}
         {step === 3 && (
           <div className="step-content">
             <div className="step-icon">🍵</div>
@@ -161,7 +230,7 @@ export default function Onboarding() {
           </div>
         )}
 
-        {/* Professional Interests */}
+        {/* Step 4: Professional Interests */}
         {step === 4 && (
           <div className="step-content">
             <div className="step-icon">☕</div>
@@ -186,7 +255,7 @@ export default function Onboarding() {
         {/* Navigation Buttons */}
         <div className="button-group">
           {step > 1 && (
-            <button onClick={prevStep} className="btn btn-secondary">
+            <button onClick={prevStep} className="btn btn-secondary" disabled={loading}>
               Back
             </button>
           )}
@@ -203,9 +272,9 @@ export default function Onboarding() {
             <button 
               onClick={handleFinish} 
               className="btn btn-primary btn-finish"
-              disabled={!canProceed()}
+              disabled={!canProceed() || loading}
             >
-              Get Started ✨
+              {loading ? 'Saving...' : 'Get Started ✨'}
             </button>
           )}
         </div>
