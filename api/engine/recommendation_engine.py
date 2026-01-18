@@ -4,15 +4,15 @@ Also contains similarity computation functions. Can be used for recommendation."
 from typing import Iterable
 
 from engine.ml_models.embedding_toolbox import EmbeddingToolbox
-from engine.ml_models.gemini_client import GeminiClient
+from engine.ml_models.openai_client import OpenAIClient
 from engine.analytics import aggregate_mode
 from models import AnalyticsSwipe
 
 def _update_user_embedding(user_blurb: str, user_tags: list[str], EmbeddingToolbox: EmbeddingToolbox,
-                          analytics_text: str, GeminiClient: GeminiClient) -> list[float]:
+                          analytics_text: str, OpenAIClient: OpenAIClient) -> list[float]:
     """Updates the user embedding based on their blurb and tags."""
     adjusted_blurb = user_blurb + " " + " ".join([f"#{tag}" for tag in user_tags])
-    adjusted_blurb = GeminiClient.augment_user_description(
+    adjusted_blurb = OpenAIClient.augment_user_description(
         base_description=adjusted_blurb,
         analytics_text=analytics_text
     )
@@ -53,7 +53,7 @@ def _get_top_events(user_embedding: list[float], event_embeddings_dict: dict[int
     return sorted_ids[:top_k]
 
 def recommend_events(event_embeddings_dict: dict[int, list[float]], seen: list[int], EmbeddingToolbox: EmbeddingToolbox, 
-                     user_blurb: str, user_tags: list[str], GeminiClient: GeminiClient,
+                     user_blurb: str, user_tags: list[str], OpenAIClient: OpenAIClient,
                      swipes: Iterable[AnalyticsSwipe], matcha_mode: bool, top_k=5) -> list[int]:
     """Recommends events to the user based on their embedding and event embeddings.
     USE THIS AS THE MAIN FUNCTION FOR RECOMMENDATION."""
@@ -63,7 +63,7 @@ def recommend_events(event_embeddings_dict: dict[int, list[float]], seen: list[i
         user_tags=user_tags,
         EmbeddingToolbox=EmbeddingToolbox,
         analytics_text=str(aggregate_mode_data),
-        GeminiClient=GeminiClient
+        OpenAIClient=OpenAIClient
     )
     top_events = _get_top_events(
         user_embedding=user_embedding,
