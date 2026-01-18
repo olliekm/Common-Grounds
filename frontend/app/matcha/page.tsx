@@ -37,9 +37,6 @@ export default function MatchaMode() {
 
   return (
     <div className="matcha-container">
-      {/* Floating 3D Avatar */}
-      <FloatingAvatar mode="matcha" />
-
       {/* Header */}
       <header className="matcha-header">
         <div className="header-left">
@@ -65,6 +62,9 @@ export default function MatchaMode() {
       <main className="matcha-main">
         {/* Hero Section */}
         <section className="hero-section">
+          {/* 3D Avatar */}
+          <FloatingAvatar mode="matcha" />
+
           <h1 className="hero-title">
             Time to <span className="hero-accent">unwind.</span>
           </h1>
