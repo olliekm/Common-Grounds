@@ -81,7 +81,9 @@ export default function CommonGrounds() {
         </div>
         
         <div className="header-right">
+          <Link href="/profile">
           <div className="avatar"></div>
+          </Link>
         </div>
       </header>
 

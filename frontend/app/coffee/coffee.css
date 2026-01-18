@@ -1,4 +1,15 @@
 /* Coffee Page Styles */
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden;
+}
+
+.coffee-page {
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 100vh;
+}
 
 :root {
   --coffee-dark: #2d1b0e;
