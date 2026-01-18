@@ -89,6 +89,11 @@ export default function CommonGrounds() {
         </div>
       </header>
 
+      <div className="cups-container">
+            <div className="cup cup-matcha"></div>
+            <div className="cup cup-coffee"></div>
+      </div>
+
       {/* Main Content */}
       <main className="main">
         {/* Hero Section */}

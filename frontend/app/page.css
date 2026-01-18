@@ -61,6 +61,34 @@ body {
   gap: 16px;
 }
 
+.cups-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 50px;
+}
+
+.cup {
+  width: 85px;
+  height: 85px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+.cup-matcha {
+  background: linear-gradient(135deg, #88B68C 100%);
+  animation: float 3s ease-in-out infinite;
+}
+
+.cup-coffee {
+  background: linear-gradient(135deg, #6d5647 100%);
+  animation: float 3s ease-in-out infinite 0.3s;
+}
+
 .create-event-btn {
   padding: 10px 20px;
   background-color: #2d3e36;
