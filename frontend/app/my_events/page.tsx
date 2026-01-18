@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import './my_events.css';
 
@@ -16,6 +17,7 @@ interface Event {
 }
 
 export default function MyEvents() {
+  const router = useRouter();
   const [mode, setMode] = useState<Mode>('matcha');
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,60 +30,26 @@ export default function MyEvents() {
   }, []);
 
   const loadEvents = async () => {
+    const userId = localStorage.getItem('userId');
+
+    if (!userId) {
+      router.push('/onboarding');
+      return;
+    }
+
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch(`${API_URL}/events`);
-      // const data = await response.json();
-      // setEvents(data);
+      const response = await fetch(`${API_URL}/users/${userId}/liked-events`);
 
-      // Mock data for demonstration
-      const mockEvents: Event[] = [
-        {
-          id: 1,
-          title: 'Sunday Morning Pottery',
-          description: 'Join us for a relaxing pottery session where we\'ll create beautiful ceramic pieces together. Perfect for beginners!',
-          tags: ['Art & Crafts', 'Ceramics', 'Creative'],
-          matcha_mode: true,
-          created_at: '2024-01-15T10:00:00Z'
-        },
-        {
-          id: 2,
-          title: 'Garden Book Club',
-          description: 'Monthly gathering to discuss our favorite books in a peaceful garden setting. This month: literary fiction.',
-          tags: ['Reading', 'Book Club', 'Nature'],
-          matcha_mode: true,
-          created_at: '2024-01-16T14:00:00Z'
-        },
-        {
-          id: 3,
-          title: 'Sunrise Yoga Flow',
-          description: 'Start your day with energizing yoga flows and meditation. All levels welcome. Bring your own mat!',
-          tags: ['Yoga', 'Meditation', 'Fitness'],
-          matcha_mode: true,
-          created_at: '2024-01-17T06:00:00Z'
-        },
-        {
-          id: 4,
-          title: 'Tech Career Workshop',
-          description: 'Learn from industry professionals about breaking into tech, building your portfolio, and acing interviews.',
-          tags: ['Career Development', 'Networking', 'Tech'],
-          matcha_mode: false,
-          created_at: '2024-01-18T18:00:00Z'
-        },
-        {
-          id: 5,
-          title: 'UX Research Meetup',
-          description: 'Connect with fellow UX researchers, share case studies, and discuss latest trends in user research methodologies.',
-          tags: ['UX Research', 'Design', 'Networking'],
-          matcha_mode: false,
-          created_at: '2024-01-19T19:00:00Z'
-        }
-      ];
+      if (!response.ok) {
+        throw new Error('Failed to fetch liked events');
+      }
 
-      setEvents(mockEvents);
+      const data = await response.json();
+      setEvents(data);
       setLoading(false);
     } catch (error) {
       console.error('Error loading events:', error);
+      setEvents([]);
       setLoading(false);
     }
   };

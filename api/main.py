@@ -156,10 +156,18 @@ def swipe_event(swipe: SwipeRequest):
     data = supabase.table("analytics").insert(analytics_record).execute()
 
     # Append event_id to user's seen array
-    user_data = supabase.table("users").select("seen").eq("id", swipe.user_id).execute()
+    user_data = supabase.table("users").select("seen, liked_events").eq("id", swipe.user_id).execute()
     seen = user_data.data[0]["seen"] or []
     seen.append(swipe.event_id)
-    supabase.table("users").update({"seen": seen}).eq("id", swipe.user_id).execute()
+
+    # If liked, also add to liked_events list
+    update_data = {"seen": seen}
+    if liked:
+        liked_events = user_data.data[0].get("liked_events") or []
+        liked_events.append(swipe.event_id)
+        update_data["liked_events"] = liked_events
+
+    supabase.table("users").update(update_data).eq("id", swipe.user_id).execute()
 
     return SwipeResponse(
         id=data.data[0]["id"],
@@ -202,6 +210,27 @@ def get_user(user_id: int):
     if not data.data:
         raise HTTPException(status_code=404, detail="User not found")
     return data.data[0]
+
+
+@app.get("/users/{user_id}/liked-events", response_model=list[Event])
+def get_liked_events(user_id: int, matcha_mode: Optional[bool] = None):
+    """Get all liked events for a user, optionally filtered by mode."""
+    # Get user's liked_events list
+    user_data = supabase.table("users").select("liked_events").eq("id", user_id).execute()
+    if not user_data.data:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    liked_event_ids = user_data.data[0].get("liked_events") or []
+    if not liked_event_ids:
+        return []
+
+    # Fetch the actual events
+    query = supabase.table("events").select("*").in_("id", liked_event_ids)
+    if matcha_mode is not None:
+        query = query.eq("matcha_mode", matcha_mode)
+    events_data = query.execute()
+
+    return events_data.data
 
 
 # Analytics
