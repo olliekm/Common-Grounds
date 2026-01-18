@@ -115,9 +115,8 @@ export default function BrewEvent() {
       if (!response.ok) {
         throw new Error('Failed to create event');
       }
-
-      // Redirect to matcha page on success
-      router.push('/matcha');
+      
+      router.push('/');
     } catch (err) {
       console.error('Error creating event:', err);
       setError('Failed to create your event. Please try again.');
