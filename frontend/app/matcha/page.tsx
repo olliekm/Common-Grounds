@@ -137,15 +137,9 @@ export default function MatchaMode() {
       <header className="matcha-header">
         <div className="header-left">
           <Link href="/" className="logo-container">
-            <div className="logo-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-                <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
-                <line x1="6" y1="1" x2="6" y2="4"/>
-                <line x1="10" y1="1" x2="10" y2="4"/>
-                <line x1="14" y1="1" x2="14" y2="4"/>
-              </svg>
+            <div className="logo">
+              <h1>Common Grounds</h1>
             </div>
-            <span className="logo-text">Common Grounds</span>
           </Link>
         </div>
       
@@ -227,11 +221,6 @@ export default function MatchaMode() {
                     />
                   </div>
                 )}
-
-                <div className="card-header-badge">
-                  <span className="badge-icon">🍵</span>
-                  <span className="badge-text">MATCHA MODE</span>
-                </div>
 
                 <div className="card-content">
                   <h2 className="card-title">{currentEvent.title}</h2>
