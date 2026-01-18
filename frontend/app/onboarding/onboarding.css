@@ -138,6 +138,20 @@
   box-shadow: 0 0 0 4px rgba(122, 157, 143, 0.1);
 }
 
+/* Textarea */
+.textarea-input {
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.input-hint {
+  font-size: 13px;
+  color: #9da8a3;
+  margin-top: 8px;
+  text-align: center;
+}
+
 /* Checklist */
 .checklist-container {
   display: grid;

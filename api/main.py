@@ -98,6 +98,10 @@ def get_events(user_id: int, matcha_mode: bool, limit: int = 10):
                 if emb:
                     event_embeddings_dict[event["id"]] = emb
 
+        print(f"[Recommendation] User {user_id}: {len(event_embeddings_dict)} events with embeddings, {len(seen)} seen")
+        blurb_preview = user_blurb[:50] + '...' if len(user_blurb) > 50 else user_blurb if user_blurb else '(empty)'
+        print(f"[Recommendation] User blurb: '{blurb_preview}' | Tags: {user_tags}")
+
         # Get user's swipe analytics for the last 5 seen events (or fewer)
         last_5_seen = seen[-5:] if len(seen) > 5 else seen
         swipes = []
@@ -118,6 +122,8 @@ def get_events(user_id: int, matcha_mode: bool, limit: int = 10):
             top_k=limit
         )
 
+        print(f"[Recommendation] Got {len(recommended_ids)} recommendations: {recommended_ids}")
+
         # Return recommended events in order
         recommended_events = []
         for event_id in recommended_ids:
@@ -125,16 +131,18 @@ def get_events(user_id: int, matcha_mode: bool, limit: int = 10):
                 if event["id"] == event_id:
                     recommended_events.append(event)
                     break
-        
+
         # If recommendations are empty, fall back
         if not recommended_events:
-            print(f"Recommendation engine returned empty, using fallback for user {user_id}")
+            print(f"[Recommendation] Empty results, using fallback for user {user_id}")
             raise ValueError("Empty recommendations")
-            
+
     except Exception as e:
         # FALLBACK: If recommendation engine fails, return unseen events
-        print(f"Recommendation engine failed for user {user_id}: {e}")
-        print(f"Falling back to unseen events")
+        print(f"[Recommendation] Failed for user {user_id}: {e}")
+        import traceback
+        traceback.print_exc()
+        print(f"[Recommendation] Falling back to unseen events")
         unseen_events = [e for e in all_events if e["id"] not in seen]
         recommended_events = unseen_events[:limit]
 
