@@ -41,6 +41,7 @@ class Event(BaseModel):
     matcha_mode: Optional[bool] = None
     embeddings: Optional[Dict[str, Any]] = None
     image_link: Optional[str] = None
+    creator_id: Optional[int] = None
 
 
 class EventCreate(BaseModel):
@@ -49,6 +50,7 @@ class EventCreate(BaseModel):
     tags: Optional[list[Any]] = None
     matcha_mode: bool
     image_link: Optional[str] = None
+    creator_id: Optional[int] = None 
 
 
 # Analytics/Swipe models

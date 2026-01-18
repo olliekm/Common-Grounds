@@ -83,12 +83,12 @@ export default function BrewEvent() {
 
   const canProceed = () => {
     switch(step) {
-      case 1: return true; // Mode selection always allows proceeding
-      case 2: return formData.title.trim().length > 0;
-      case 3: return imageFile !== null;
-      case 4: return formData.description.trim().length > 0 && formData.tags.length > 0;
-      default: return false;
-    }
+    case 1: return true;
+    case 2: return formData.title.trim().length > 0;
+    case 3: return true; 
+    case 4: return formData.description.trim().length > 0 && formData.tags.length > 0;
+    default: return false;
+  }
   };
 
   const handleSubmit = async () => {
@@ -96,13 +96,25 @@ export default function BrewEvent() {
     setError('');
 
     try {
-      // Prepare JSON data in the required format
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        setError('User not found. Please log in again.');
+        setLoading(false);
+        return;
+      }
+
+      // Prepare JSON data with creator_id
       const submitData = {
         title: formData.title,
         description: formData.description,
         tags: formData.tags,
-        matcha_mode: mode === 'matcha'
+        matcha_mode: mode === 'matcha',
+        image_link: null,
+        creator_id: parseInt(userId, 10)  // ← Add this back
       };
+
+      console.log('Submitting to:', `${API_URL}/events`);
+      console.log('Data:', submitData);
 
       const response = await fetch(`${API_URL}/events`, {
         method: 'POST',
@@ -112,14 +124,21 @@ export default function BrewEvent() {
         body: JSON.stringify(submitData)
       });
 
+      console.log('Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error('Failed to create event');
+        const errorData = await response.json().catch(() => null);
+        console.error('Error response:', errorData);
+        throw new Error(errorData?.detail || 'Failed to create event');
       }
+
+      const result = await response.json();
+      console.log('Success:', result);
       
       router.push('/');
     } catch (err) {
       console.error('Error creating event:', err);
-      setError('Failed to create your event. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to create your event. Please try again.');
       setLoading(false);
     }
   };

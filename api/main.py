@@ -45,24 +45,57 @@ embedding_toolbox.instantiate()
 
 # Events
 @app.post("/events", response_model=Event)
+@app.post("/events", response_model=Event)
 def create_event(event: EventCreate):
     """Create a new event."""
-    tags = event.tags or []
-    description = event.description or ""
-    title = event.title
+    try:
+        tags = event.tags or []
+        description = event.description or ""
+        title = event.title
 
-    # Generate embedding for the designated mode
-    embedding = embedding_toolbox.encode(description, tags, title)
-    embedding_list = embedding.tolist() if hasattr(embedding, 'tolist') else list(embedding)
+        print(f"[CREATE EVENT] Title: {title}, Mode: {event.matcha_mode}, Creator: {event.creator_id}")
 
-    event_data = event.model_dump()
-    if event.matcha_mode:
-        event_data["embeddings"] = {"matcha": embedding_list}
-    else:
-        event_data["embeddings"] = {"coffee": embedding_list}
+        # Generate embedding for the designated mode
+        try:
+            embedding = embedding_toolbox.encode(description, tags, title)
+            embedding_list = embedding.tolist() if hasattr(embedding, 'tolist') else list(embedding)
+            print(f"[CREATE EVENT] Generated embedding of length: {len(embedding_list)}")
+        except Exception as e:
+            print(f"[CREATE EVENT] Embedding generation failed: {e}")
+            embedding_list = None
 
-    data = supabase.table("events").insert(event_data).execute()
-    return data.data[0]
+        # Build event data dictionary manually (don't use model_dump)
+        event_data = {
+            "title": event.title,
+            "description": event.description,
+            "tags": event.tags,
+            "matcha_mode": event.matcha_mode,
+            "image_link": event.image_link,
+            "creator_id": event.creator_id,  # ← Include this
+        }
+
+        # Add embeddings if generation succeeded
+        if embedding_list:
+            if event.matcha_mode:
+                event_data["embeddings"] = {"matcha": embedding_list}
+            else:
+                event_data["embeddings"] = {"coffee": embedding_list}
+
+        print(f"[CREATE EVENT] Inserting into database with creator_id: {event.creator_id}")
+        
+        data = supabase.table("events").insert(event_data).execute()
+        
+        if not data.data:
+            raise HTTPException(status_code=500, detail="Failed to insert event into database")
+        
+        print(f"[CREATE EVENT] Success! Event ID: {data.data[0]['id']}")
+        return data.data[0]
+        
+    except Exception as e:
+        print(f"[CREATE EVENT] Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to create event: {str(e)}")
 
 @app.get("/events", response_model=list[Event])
 def get_events(user_id: int, matcha_mode: bool, limit: int = 10):
@@ -255,6 +288,18 @@ def get_liked_events(user_id: int, matcha_mode: Optional[bool] = None):
     events_data = query.execute()
 
     return events_data.data
+
+
+@app.get("/users/{user_id}/created-events", response_model=list[Event])
+def get_created_events(user_id: int, matcha_mode: Optional[bool] = None):
+    """Get all events created by a user, optionally filtered by mode."""
+    # Fetch events where creator_id matches user_id
+    query = supabase.table("events").select("*").eq("creator_id", user_id)
+    if matcha_mode is not None:
+        query = query.eq("matcha_mode", matcha_mode)
+    events_data = query.execute()
+
+    return events_data.data if events_data.data else []
 
 
 # Analytics
