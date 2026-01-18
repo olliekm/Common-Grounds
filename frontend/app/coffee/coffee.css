@@ -512,7 +512,7 @@ body {
 .btn-apply {
   width: 100%;
   padding: 12px;
-  background: linear-gradient(135deg, var(--coffee-medium), var(--coffee-light));
+  background: #B9967C;
   color: var(--white);
   border: none;
   border-radius: 8px;
