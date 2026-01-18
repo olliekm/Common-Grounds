@@ -11,7 +11,7 @@ interface Event {
   tags: string[];
   matcha_mode: boolean;
   created_at: string;
-  event_link?: string;
+  image_link?: string;
 }
 
 export default function CoffeeMode() {
@@ -214,13 +214,17 @@ export default function CoffeeMode() {
           ) : (
             <div className={`swipe-card-container ${swipeDirection ? `swiping-${swipeDirection}` : ''}`}>
               <div className="swipe-card">
-                {currentEvent.event_link && (
+                {currentEvent.image_link ? (
                   <div className="card-image">
                     <img 
-                      src={currentEvent.event_link} 
+                      src={currentEvent.image_link} 
                       alt={currentEvent.title}
                       onError={(e) => e.currentTarget.style.display = 'none'}
                     />
+                  </div>
+                ) : (
+                  <div className="card-image card-image-placeholder">
+                    <div className="placeholder-content">💼</div>
                   </div>
                 )}
 
