@@ -159,11 +159,11 @@ export default function CommonGrounds() {
       </main>
 
       {/* Footer */}
-      <footer className="footer">
+      {/* <footer className="footer">
         <p className="footer-text">
           Common Grounds
         </p>
-      </footer>
+      </footer> */}
     </div>
   );
 }
