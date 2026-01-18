@@ -116,7 +116,21 @@ export default function CommonGrounds() {
             className={`card card-personal ${hoveredCard === 'personal' ? 'card-hover' : ''}`}
             onMouseEnter={() => setHoveredCard('personal')}
             onMouseLeave={() => setHoveredCard(null)}
+            style={{ position: 'relative' }}
           >
+            <img 
+              src="/matcha-cup.png" 
+              alt="Matcha cup" 
+              style={{
+                position: 'absolute',
+                top: '-40px',
+                left: '-60px',
+                width: '120px',
+                height: 'auto',
+                zIndex: 10,
+                objectFit: 'contain'
+              }}
+            />
             <div className="card-badge">Personal</div>
 
             <h3 className="card-title">Matcha Mode</h3>
@@ -141,7 +155,21 @@ export default function CommonGrounds() {
             className={`card card-professional ${hoveredCard === 'professional' ? 'card-hover' : ''}`}
             onMouseEnter={() => setHoveredCard('professional')}
             onMouseLeave={() => setHoveredCard(null)}
+            style={{ position: 'relative' }}
           >
+            <img 
+              src="/coffee-cup.png" 
+              alt="Coffee cup" 
+              style={{
+                position: 'absolute',
+                top: '-60px',
+                right: '-40px',
+                width: '120px',
+                height: 'auto',
+                zIndex: 10,
+                objectFit: 'contain'
+              }}
+            />
             <div className="card-badge">Professional</div>
 
             <h3 className="card-title">Coffee Mode</h3>

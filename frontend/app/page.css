@@ -189,6 +189,8 @@ body {
   padding: 32px;
   transition: all 0.3s ease;
   border: 1px solid transparent;
+  position: relative;
+  overflow: visible;
 }
 
 .card-personal {
