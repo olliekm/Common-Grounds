@@ -4,12 +4,12 @@ from typing import Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from supabase import create_client, Client
-import google.generativeai as genai
 import numpy as np
 from engine.analytics import generate_dashboard
 
 from engine.ml_models.gemini_client import GeminiClient
 from engine.ml_models.embedding_toolbox import EmbeddingToolbox
+from engine.recommendation_engine import recommend_events
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
@@ -42,11 +42,7 @@ supabase: Client = create_client(
     os.environ.get("SUPABASE_KEY", "")
 )
 
-if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY environment variable is not set")
-genai.configure(api_key=GEMINI_API_KEY)
-gemini_model = genai.GenerativeModel("gemini-2.5-flash")
-gemini_client = GeminiClient(gemini_model)
+gemini_client = GeminiClient()
 
 embedding_toolbox = EmbeddingToolbox()
 embedding_toolbox.instantiate()
@@ -55,7 +51,21 @@ embedding_toolbox.instantiate()
 @app.post("/events", response_model=Event)
 def create_event(event: EventCreate):
     """Create a new event."""
-    data = supabase.table("events").insert(event.model_dump()).execute()
+    tags = event.tags or []
+    description = event.description or ""
+    title = event.title
+
+    # Generate embedding for the designated mode
+    embedding = embedding_toolbox.encode(description, tags, title)
+    embedding_list = embedding.tolist() if hasattr(embedding, 'tolist') else list(embedding)
+
+    event_data = event.model_dump()
+    if event.matcha_mode:
+        event_data["embeddings"] = {"matcha": embedding_list}
+    else:
+        event_data["embeddings"] = {"coffee": embedding_list}
+
+    data = supabase.table("events").insert(event_data).execute()
     return data.data[0]
 
 
@@ -63,24 +73,60 @@ def create_event(event: EventCreate):
 def get_events(user_id: int, matcha_mode: bool, limit: int = 10):
     """
     Get events for a user filtered by mode (matcha or coffee).
-    The user_id is passed to the recommendation engine for personalized suggestions.
+    Uses the recommendation engine for personalized suggestions.
     """
+    # Get user data (blurb, tags, seen)
+    user_data = supabase.table("users").select("*").eq("id", user_id).execute()
+    if not user_data.data:
+        raise HTTPException(status_code=404, detail="User not found")
+    user = user_data.data[0]
 
-    """
-    {
-        1: embedlkmaed,
-        2: nfweklfnlw;ekfw,
-    }
-    """
+    seen = user.get("seen") or []
+    user_tags = user.get("tags") or []
+    user_blurb = user.get("matcha_blurb") if matcha_mode else user.get("coffee_blurb")
+    user_blurb = user_blurb or ""
 
-    # TODO: GET ALL EVENTS AND EMBEDINGS PASS AS DICTIONARY
-    # TODO: get last 5 event ids
-    # TODO: get all analytics from user and event ids
-    # TODO: Integrate with recommendation engine using user_id
+    # Get events for the requested mode
+    events_data = supabase.table("events").select("*").eq("matcha_mode", matcha_mode).execute()
+    all_events = events_data.data
 
-    # TODO: Filter out events user has already seen
-    data = supabase.table("events").select("*").limit(limit).execute()
-    return data.data
+    # Build event embeddings dictionary {event_id: embedding}
+    event_embeddings_dict = {}
+    for event in all_events:
+        if event.get("embeddings"):
+            emb = event["embeddings"].get("matcha") if matcha_mode else event["embeddings"].get("coffee")
+            if emb:
+                event_embeddings_dict[event["id"]] = emb
+
+    # Get user's swipe analytics for the last 5 seen events (or fewer)
+    last_5_seen = seen[-5:] if len(seen) > 5 else seen
+    swipes = []
+    if last_5_seen:
+        analytics_data = supabase.table("analytics").select("*").eq("user_id", user_id).eq("matcha_mode", matcha_mode).in_("event_id", last_5_seen).execute()
+        swipes = [Analytics(**record) for record in analytics_data.data]
+
+    # Get recommended event IDs
+    recommended_ids = recommend_events(
+        event_embeddings_dict=event_embeddings_dict,
+        seen=seen,
+        EmbeddingToolbox=embedding_toolbox,
+        user_blurb=user_blurb,
+        user_tags=user_tags,
+        GeminiClient=gemini_client,
+        swipes=swipes,
+        matcha_mode=matcha_mode,
+        top_k=limit
+    )
+
+    # Return recommended events in order
+    recommended_events = []
+    for event_id in recommended_ids:
+        for event in all_events:
+            if event["id"] == event_id:
+                recommended_events.append(event)
+                break
+
+    return recommended_events
 
 
 @app.get("/events/{event_id}", response_model=Event)
@@ -123,13 +169,20 @@ def swipe_event(swipe: SwipeRequest):
         matcha_mode=swipe.matcha_mode,
     )
 
-
 # Users
 @app.post("/users", response_model=User)
 def create_user(user: UserCreate):
     """Create a new user."""
-    coffee_embeddings = embedding_toolbox.encode(user.coffee_blurb, user.tags).tolist()
-    matcha_embeddings = embedding_toolbox.encode(user.matcha_blurb, user.tags).tolist()
+    tags = user.tags or []
+    coffee_blurb = user.coffee_blurb or ""
+    matcha_blurb = user.matcha_blurb or ""
+
+    coffee_embedding = embedding_toolbox.encode(coffee_blurb, tags, None)
+    matcha_embedding = embedding_toolbox.encode(matcha_blurb, tags, None)
+
+    # Convert numpy arrays to Python lists
+    coffee_embeddings = coffee_embedding.tolist() if hasattr(coffee_embedding, 'tolist') else list(coffee_embedding)
+    matcha_embeddings = matcha_embedding.tolist() if hasattr(matcha_embedding, 'tolist') else list(matcha_embedding)
 
     user_data = user.model_dump()
     user_data["embeddings"] = {

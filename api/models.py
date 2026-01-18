@@ -19,7 +19,7 @@ class User(BaseModel):
     matcha_blurb: Optional[str] = None
     coffee_blurb: Optional[str] = None
     tags: Optional[list[Any]] = None
-    embeddings: Optional[list[Any]] = None
+    embeddings: Optional[Dict[str, Any]] = None
     seen: Optional[list[Any]] = None
 
 
@@ -37,15 +37,15 @@ class Event(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     tags: Optional[list[Any]] = None
-    mode: Optional[list[Any]] = None  # matcha/coffee modes
-    embeddings: Optional[list[Any]] = None
+    matcha_mode: Optional[bool] = None
+    embeddings: Optional[Dict[str, Any]] = None
 
 
 class EventCreate(BaseModel):
     title: str
     description: Optional[str] = None
     tags: Optional[list[Any]] = None
-    mode: Optional[list[Any]] = None
+    matcha_mode: bool
 
 
 # Analytics/Swipe models
@@ -70,8 +70,6 @@ class AnalyticsSwipe(BaseModel):
     person_id: str
     tags: Optional[list[str]] = None
     time_spent: Optional[timedelta]
-    liked: bool
-    matcha_mode: bool
 
 class Analytics(BaseModel):
     id: int
