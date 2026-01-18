@@ -66,12 +66,12 @@ def create_event(event: EventCreate):
     data = supabase.table("events").insert(event_data).execute()
     return data.data[0]
 
-
 @app.get("/events", response_model=list[Event])
 def get_events(user_id: int, matcha_mode: bool, limit: int = 10):
     """
     Get events for a user filtered by mode (matcha or coffee).
     Uses the recommendation engine for personalized suggestions.
+    Falls back to unseen events if recommendation fails.
     """
     # Get user data (blurb, tags, seen)
     user_data = supabase.table("users").select("*").eq("id", user_id).execute()
@@ -88,44 +88,66 @@ def get_events(user_id: int, matcha_mode: bool, limit: int = 10):
     events_data = supabase.table("events").select("*").eq("matcha_mode", matcha_mode).execute()
     all_events = events_data.data
 
-    # Build event embeddings dictionary {event_id: embedding}
-    event_embeddings_dict = {}
-    for event in all_events:
-        if event.get("embeddings"):
-            emb = event["embeddings"].get("matcha") if matcha_mode else event["embeddings"].get("coffee")
-            if emb:
-                event_embeddings_dict[event["id"]] = emb
-
-    # Get user's swipe analytics for the last 5 seen events (or fewer)
-    last_5_seen = seen[-5:] if len(seen) > 5 else seen
-    swipes = []
-    if last_5_seen:
-        analytics_data = supabase.table("analytics").select("*").eq("user_id", user_id).eq("matcha_mode", matcha_mode).in_("event_id", last_5_seen).execute()
-        swipes = [Analytics(**record) for record in analytics_data.data]
-
-    # Get recommended event IDs
-    recommended_ids = recommend_events(
-        event_embeddings_dict=event_embeddings_dict,
-        seen=seen,
-        EmbeddingToolbox=embedding_toolbox,
-        user_blurb=user_blurb,
-        user_tags=user_tags,
-        GeminiClient=gemini_client,
-        swipes=swipes,
-        matcha_mode=matcha_mode,
-        top_k=limit
-    )
-
-    # Return recommended events in order
-    recommended_events = []
-    for event_id in recommended_ids:
+    # TRY to use recommendation engine, but fall back if it fails
+    try:
+        # Build event embeddings dictionary {event_id: embedding}
+        event_embeddings_dict = {}
         for event in all_events:
-            if event["id"] == event_id:
-                recommended_events.append(event)
-                break
+            if event.get("embeddings"):
+                emb = event["embeddings"].get("matcha") if matcha_mode else event["embeddings"].get("coffee")
+                if emb:
+                    event_embeddings_dict[event["id"]] = emb
+
+        # Get user's swipe analytics for the last 5 seen events (or fewer)
+        last_5_seen = seen[-5:] if len(seen) > 5 else seen
+        swipes = []
+        if last_5_seen:
+            analytics_data = supabase.table("analytics").select("*").eq("user_id", user_id).eq("matcha_mode", matcha_mode).in_("event_id", last_5_seen).execute()
+            swipes = [Analytics(**record) for record in analytics_data.data]
+
+        # Get recommended event IDs
+        recommended_ids = recommend_events(
+            event_embeddings_dict=event_embeddings_dict,
+            seen=seen,
+            EmbeddingToolbox=embedding_toolbox,
+            user_blurb=user_blurb,
+            user_tags=user_tags,
+            GeminiClient=gemini_client,
+            swipes=swipes,
+            matcha_mode=matcha_mode,
+            top_k=limit
+        )
+
+        # Return recommended events in order
+        recommended_events = []
+        for event_id in recommended_ids:
+            for event in all_events:
+                if event["id"] == event_id:
+                    recommended_events.append(event)
+                    break
+        
+        # If recommendations are empty, fall back
+        if not recommended_events:
+            print(f"Recommendation engine returned empty, using fallback for user {user_id}")
+            raise ValueError("Empty recommendations")
+            
+    except Exception as e:
+        # FALLBACK: If recommendation engine fails, return unseen events
+        print(f"Recommendation engine failed for user {user_id}: {e}")
+        print(f"Falling back to unseen events")
+        unseen_events = [e for e in all_events if e["id"] not in seen]
+        recommended_events = unseen_events[:limit]
 
     return recommended_events
 
+@app.get("/events/all", response_model=list[Event])
+def get_all_events(matcha_mode: bool, limit: int = 20):
+    """
+    Get all events filtered by mode without personalization.
+    Use this as a fallback when recommendation engine returns empty results.
+    """
+    events_data = supabase.table("events").select("*").eq("matcha_mode", matcha_mode).limit(limit).execute()
+    return events_data.data
 
 @app.get("/events/{event_id}", response_model=Event)
 def get_event(event_id: int):
@@ -134,7 +156,6 @@ def get_event(event_id: int):
     if not data.data:
         raise HTTPException(status_code=404, detail="Event not found")
     return data.data[0]
-
 
 # Swipes/Analytics
 @app.post("/swipe", response_model=SwipeResponse)
