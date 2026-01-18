@@ -5,12 +5,6 @@ import Link from 'next/link';
 import './analytics.css';
 
 interface AnalyticsData {
-  person: {
-    id: number;
-    name: string;
-    matcha_blurb: string;
-    coffee_blurb: string;
-  };
   coffee: {
     total_swipes: number;
     likes: number;
@@ -18,7 +12,6 @@ interface AnalyticsData {
     like_rate: number;
     avg_time_spent: number;
     total_time_spent: number;
-    hesitation_score: number;
   };
   matcha: {
     total_swipes: number;
@@ -27,348 +20,411 @@ interface AnalyticsData {
     like_rate: number;
     avg_time_spent: number;
     total_time_spent: number;
-    hesitation_score: number;
   };
   total_swipes: number;
   overall_like_rate: number;
-  tags: {
-    [key: string]: number;
-  };
-  ai_insights: string[];
+  tags: string[];
+  ai_insights: string;
 }
 
-export default function AnalyticsPage() {
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+export default function Analytics() {
+  const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedMode, setSelectedMode] = useState<'all' | 'matcha' | 'coffee'>('all');
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
   useEffect(() => {
-    fetchAnalytics();
+    loadAnalytics();
   }, []);
 
-  const fetchAnalytics = async () => {
+  const loadAnalytics = async () => {
     try {
-      const userId = localStorage.getItem('userId');
+      // TODO: Replace with actual API call
+      // ============================================
+      // BACKEND IMPORT NOTE:
+      // This should call: GET /dashboard or GET /users/{userId}/dashboard
+      // Expected response format matches the Dashboard model:
+      // {
+      //   "coffee": {
+      //     "total_swipes": number,
+      //     "likes": number,
+      //     "dislikes": number,
+      //     "like_rate": number,
+      //     "avg_time_spent": number,
+      //     "total_time_spent": number
+      //   },
+      //   "matcha": {
+      //     "total_swipes": number,
+      //     "likes": number,
+      //     "dislikes": number,
+      //     "like_rate": number,
+      //     "avg_time_spent": number,
+      //     "total_time_spent": number
+      //   },
+      //   "total_swipes": number,
+      //   "overall_like_rate": number,
+      //   "tags": string[],
+      //   "ai_insights": string
+      // }
+      // ============================================
       
-      if (!userId) {
-        console.error('No user ID found');
-        return;
-      }
+      // const userId = localStorage.getItem('userId');
+      // const response = await fetch(`${API_URL}/dashboard`, {
+      //   headers: {
+      //     'Authorization': `Bearer ${token}` // if you use auth
+      //   }
+      // });
+      // const analyticsData = await response.json();
+      // setData(analyticsData);
 
-      const response = await fetch(`${API_URL}/users/${userId}/analytics`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch analytics');
-      }
-
-      const data = await response.json();
-      console.log('Analytics data:', data);
-      setAnalyticsData(data);
+      // Mock data for demonstration
+      setTimeout(() => {
+        const mockData: AnalyticsData = {
+          coffee: {
+            total_swipes: 28,
+            likes: 24,
+            dislikes: 4,
+            like_rate: 85.7,
+            avg_time_spent: 12.5,
+            total_time_spent: 350
+          },
+          matcha: {
+            total_swipes: 47,
+            likes: 41,
+            dislikes: 6,
+            like_rate: 87.2,
+            avg_time_spent: 15.3,
+            total_time_spent: 719
+          },
+          total_swipes: 75,
+          overall_like_rate: 86.7,
+          tags: ['Yoga', 'Networking', 'Book Club', 'UX Research', 'Hiking'],
+          ai_insights: "You're showing a strong preference for personal growth activities! Your matcha engagement is 68% higher than coffee events, suggesting you value work-life balance. Consider exploring more creative workshops to maintain this healthy rhythm. Your high like rate of 87% indicates you're great at finding events that truly resonate with your interests!"
+        };
+        setData(mockData);
+        setLoading(false);
+      }, 1000);
     } catch (error) {
-      console.error('Error fetching analytics:', error);
-    } finally {
+      console.error('Error loading analytics:', error);
       setLoading(false);
     }
   };
 
-  const formatTime = (seconds: number) => {
-    if (seconds < 60) return `${Math.round(seconds)}s`;
-    const minutes = Math.floor(seconds / 60);
-    const secs = Math.round(seconds % 60);
-    return `${minutes}m ${secs}s`;
-  };
-
-  const getCurrentModeData = () => {
-    if (!analyticsData) return null;
-    
-    if (selectedMode === 'matcha') return analyticsData.matcha;
-    if (selectedMode === 'coffee') return analyticsData.coffee;
-    
-    // For 'all', combine the data
-    return {
-      total_swipes: analyticsData.total_swipes,
-      likes: analyticsData.matcha.likes + analyticsData.coffee.likes,
-      dislikes: analyticsData.matcha.dislikes + analyticsData.coffee.dislikes,
-      like_rate: analyticsData.overall_like_rate,
-      avg_time_spent: (analyticsData.matcha.avg_time_spent + analyticsData.coffee.avg_time_spent) / 2,
-      total_time_spent: analyticsData.matcha.total_time_spent + analyticsData.coffee.total_time_spent,
-      hesitation_score: (analyticsData.matcha.hesitation_score + analyticsData.coffee.hesitation_score) / 2,
-    };
-  };
-
   if (loading) {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        backgroundColor: '#faf9f7'
-      }}>
-        <div style={{ fontSize: '48px' }}>📊</div>
+      <div className="analytics-container">
+        <div className="loading-state">
+          <div className="loading-spinner">📊</div>
+          <p className="loading-text">Brewing your insights...</p>
+        </div>
       </div>
     );
   }
 
-  const modeData = getCurrentModeData();
+  if (!data) {
+    return (
+      <div className="analytics-container">
+        <div className="loading-state">
+          <div className="loading-spinner">❌</div>
+          <p className="loading-text">Unable to load analytics</p>
+        </div>
+      </div>
+    );
+  }
+
+  const totalSwipes = data.matcha.total_swipes + data.coffee.total_swipes;
+  const maxHeight = 220;
+  const matchaHeight = totalSwipes > 0 ? (data.matcha.total_swipes / Math.max(data.matcha.total_swipes, data.coffee.total_swipes)) * maxHeight : 0;
+  const coffeeHeight = totalSwipes > 0 ? (data.coffee.total_swipes / Math.max(data.matcha.total_swipes, data.coffee.total_swipes)) * maxHeight : 0;
+
+  const formatTime = (seconds: number) => {
+    if (seconds < 60) return `${seconds.toFixed(1)}s`;
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${minutes}m ${secs}s`;
+  };
 
   return (
     <div className="analytics-container">
       {/* Header */}
       <header className="analytics-header">
-        <div className="header-left">
-          <Link href="/" className="logo-container">
-            <div className="logo-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-                <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
-                <line x1="6" y1="1" x2="6" y2="4"/>
-                <line x1="10" y1="1" x2="10" y2="4"/>
-                <line x1="14" y1="1" x2="14" y2="4"/>
-              </svg>
-            </div>
-            <span className="logo-text">Common Grounds</span>
-          </Link>
-        </div>
-        
-        <div className="header-right">
-          <Link href="/profile">
-            <div className="avatar"></div>
-          </Link>
-        </div>
+        <Link href="/" className="home-button">
+          <span className="home-icon">🏠</span>
+          Home
+        </Link>
+        <h1 className="header-title">Analytics</h1>
+        <div className="header-spacer"></div>
       </header>
 
       {/* Main Content */}
       <main className="analytics-main">
-        {/* Page Title */}
-        <div className="page-header">
-          <h1 className="page-title">Your Analytics</h1>
-          <p className="page-subtitle">
-            {analyticsData?.person.name}'s activity insights
+        {/* Hero Section */}
+        <section className="analytics-hero">
+          <div className="hero-icon-container">📊</div>
+          <h1 className="analytics-title">Your Journey</h1>
+          <p className="analytics-subtitle">
+            Insights into your Common Grounds experience
           </p>
-        </div>
+          <p className="date-range">
+            All time data • Last updated today
+          </p>
+        </section>
 
-        {/* Mode Selector */}
-        <div className="mode-selector">
-          <button 
-            className={`mode-btn ${selectedMode === 'all' ? 'active' : ''}`}
-            onClick={() => setSelectedMode('all')}
-          >
-            <span className="mode-icon">📊</span>
-            All Modes
-          </button>
-          <button 
-            className={`mode-btn mode-matcha ${selectedMode === 'matcha' ? 'active' : ''}`}
-            onClick={() => setSelectedMode('matcha')}
-          >
-            <span className="mode-icon">🍵</span>
-            Matcha
-          </button>
-          <button 
-            className={`mode-btn mode-coffee ${selectedMode === 'coffee' ? 'active' : ''}`}
-            onClick={() => setSelectedMode('coffee')}
-          >
-            <span className="mode-icon">☕</span>
-            Coffee
-          </button>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="stats-grid">
-          {/* Total Interactions */}
-          <div className="stat-card">
-            <div className="stat-icon">🔢</div>
-            <div className="stat-content">
-              <h3 className="stat-label">Total Interactions</h3>
-              <p className="stat-value">{modeData?.total_swipes || 0}</p>
-              <p className="stat-description">
-                {selectedMode === 'all' 
-                  ? `${analyticsData?.matcha.total_swipes || 0} matcha · ${analyticsData?.coffee.total_swipes || 0} coffee`
-                  : 'Total swipes made'}
-              </p>
-            </div>
+        {/* Overall Stats */}
+        <section className="analytics-section">
+          <div className="section-header">
+            <h2 className="section-title">
+              <span>📊</span>
+              Overall Stats
+            </h2>
+            <p className="section-subtitle">Your complete Common Grounds journey</p>
           </div>
 
-          {/* Avg Time per Interaction */}
-          <div className="stat-card">
-            <div className="stat-icon">⏱️</div>
-            <div className="stat-content">
-              <h3 className="stat-label">Avg Time per Interaction</h3>
-              <p className="stat-value">{formatTime(modeData?.avg_time_spent || 0)}</p>
-              <p className="stat-description">Time spent per card</p>
-            </div>
-          </div>
-
-          {/* Total Time */}
-          <div className="stat-card">
-            <div className="stat-icon">⏰</div>
-            <div className="stat-content">
-              <h3 className="stat-label">Total Time</h3>
-              <p className="stat-value">{formatTime(modeData?.total_time_spent || 0)}</p>
-              <p className="stat-description">Time spent exploring</p>
-            </div>
-          </div>
-
-          {/* Swipe Right */}
-          <div className="stat-card stat-positive">
-            <div className="stat-icon">👍</div>
-            <div className="stat-content">
-              <h3 className="stat-label">Swipe Right</h3>
-              <p className="stat-value">{modeData?.likes || 0}</p>
-              <p className="stat-description">Opportunities you liked</p>
-            </div>
-          </div>
-
-          {/* Swipe Left */}
-          <div className="stat-card stat-negative">
-            <div className="stat-icon">👎</div>
-            <div className="stat-content">
-              <h3 className="stat-label">Swipe Left</h3>
-              <p className="stat-value">{modeData?.dislikes || 0}</p>
-              <p className="stat-description">Opportunities you passed</p>
-            </div>
-          </div>
-
-          {/* Like Rate */}
-          <div className="stat-card stat-accent">
-            <div className="stat-icon">💚</div>
-            <div className="stat-content">
-              <h3 className="stat-label">Like Rate</h3>
-              <p className="stat-value">{Math.round((modeData?.like_rate || 0) * 100)}%</p>
-              <p className="stat-description">
-                {(modeData?.like_rate || 0) > 0.7 
-                  ? 'You love exploring!' 
-                  : (modeData?.like_rate || 0) > 0.4 
-                    ? 'Balanced preferences' 
-                    : 'Selective explorer'}
-              </p>
-            </div>
-          </div>
-
-          {/* Hesitation Score */}
-          <div className="stat-card">
-            <div className="stat-icon">🤔</div>
-            <div className="stat-content">
-              <h3 className="stat-label">Hesitation Score</h3>
-              <p className="stat-value">{Math.round((modeData?.hesitation_score || 0) * 100)}</p>
-              <p className="stat-description">
-                {(modeData?.hesitation_score || 0) > 0.7 
-                  ? 'You take your time' 
-                  : (modeData?.hesitation_score || 0) > 0.4 
-                    ? 'Thoughtful decisions' 
-                    : 'Quick decision maker'}
-              </p>
-            </div>
-          </div>
-
-          {/* Session Frequency - Placeholder */}
-          <div className="stat-card">
-            <div className="stat-icon">📅</div>
-            <div className="stat-content">
-              <h3 className="stat-label">Session Frequency</h3>
-              <p className="stat-value">Daily</p>
-              <p className="stat-description">Active user</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Mode Breakdown */}
-        {selectedMode === 'all' && analyticsData && (
-          <div className="mode-breakdown">
-            <h2 className="section-title">Mode Breakdown</h2>
-            <div className="breakdown-grid">
-              <div className="breakdown-card breakdown-matcha">
-                <div className="breakdown-header">
-                  <span className="breakdown-icon">🍵</span>
-                  <h3>Matcha Mode</h3>
-                </div>
-                <div className="breakdown-stats">
-                  <div className="breakdown-stat">
-                    <span className="breakdown-label">Interactions</span>
-                    <span className="breakdown-value">{analyticsData.matcha.total_swipes}</span>
-                  </div>
-                  <div className="breakdown-stat">
-                    <span className="breakdown-label">Like Rate</span>
-                    <span className="breakdown-value">{Math.round(analyticsData.matcha.like_rate * 100)}%</span>
-                  </div>
-                  <div className="breakdown-stat">
-                    <span className="breakdown-label">Avg Time</span>
-                    <span className="breakdown-value">{formatTime(analyticsData.matcha.avg_time_spent)}</span>
-                  </div>
-                </div>
+          <div className="stats-grid-small">
+            <div className="stat-card overall">
+              <span className="stat-icon">🎯</span>
+              <div className="stat-label">Total Swipes</div>
+              <div className="stat-value">{data.total_swipes}</div>
+              <div className="stat-change positive">
+                <span>↑</span>
+                All interactions
               </div>
+            </div>
 
-              <div className="breakdown-card breakdown-coffee">
-                <div className="breakdown-header">
-                  <span className="breakdown-icon">☕</span>
-                  <h3>Coffee Mode</h3>
-                </div>
-                <div className="breakdown-stats">
-                  <div className="breakdown-stat">
-                    <span className="breakdown-label">Interactions</span>
-                    <span className="breakdown-value">{analyticsData.coffee.total_swipes}</span>
-                  </div>
-                  <div className="breakdown-stat">
-                    <span className="breakdown-label">Like Rate</span>
-                    <span className="breakdown-value">{Math.round(analyticsData.coffee.like_rate * 100)}%</span>
-                  </div>
-                  <div className="breakdown-stat">
-                    <span className="breakdown-label">Avg Time</span>
-                    <span className="breakdown-value">{formatTime(analyticsData.coffee.avg_time_spent)}</span>
-                  </div>
-                </div>
+            <div className="stat-card rate">
+              <span className="stat-icon">💚</span>
+              <div className="stat-label">Overall Like Rate</div>
+              <div className="stat-value">{data.overall_like_rate.toFixed(1)}%</div>
+              <div className="stat-change positive">
+                <span>↑</span>
+                Great taste!
+              </div>
+            </div>
+
+            <div className="stat-card overall">
+              <span className="stat-icon">🏷️</span>
+              <div className="stat-label">Active Tags</div>
+              <div className="stat-value">{data.tags.length}</div>
+              <div className="stat-change neutral">
+                <span>—</span>
+                Interests tracked
               </div>
             </div>
           </div>
-        )}
+        </section>
 
-        {/* Top Tags */}
-        {analyticsData?.tags && Object.keys(analyticsData.tags).length > 0 && (
-          <div className="tags-section">
-            <h2 className="section-title">Your Top Interests</h2>
-            <div className="tags-cloud">
-              {Object.entries(analyticsData.tags)
-                .sort(([, a], [, b]) => b - a)
-                .slice(0, 10)
-                .map(([tag, count]) => (
-                  <div key={tag} className="tag-item">
-                    <span className="tag-name">{tag}</span>
-                    <span className="tag-count">{count}</span>
-                  </div>
-                ))}
+        {/* Matcha Mode Stats */}
+        <section className="analytics-section">
+          <div className="section-header">
+            <h2 className="section-title">
+              <span>🍵</span>
+              Matcha Mode
+            </h2>
+            <p className="section-subtitle">Your personal and creative activities</p>
+          </div>
+
+          <div className="stats-grid">
+            <div className="stat-card matcha">
+              <span className="stat-icon">👆</span>
+              <div className="stat-label">Total Swipes</div>
+              <div className="stat-value">{data.matcha.total_swipes}</div>
+              <div className="stat-change positive">
+                <span>↑</span>
+                Personal moments
+              </div>
+            </div>
+
+            <div className="stat-card matcha">
+              <span className="stat-icon">💚</span>
+              <div className="stat-label">Likes</div>
+              <div className="stat-value">{data.matcha.likes}</div>
+              <div className="stat-change positive">
+                <span>↑</span>
+                Right swipes
+              </div>
+            </div>
+
+            <div className="stat-card rejection">
+              <span className="stat-icon">👎</span>
+              <div className="stat-label">Dislikes</div>
+              <div className="stat-value">{data.matcha.dislikes}</div>
+              <div className="stat-change neutral">
+                <span>—</span>
+                Left swipes
+              </div>
+            </div>
+
+            <div className="stat-card rate">
+              <span className="stat-icon">📈</span>
+              <div className="stat-label">Like Rate</div>
+              <div className="stat-value">{data.matcha.like_rate.toFixed(1)}%</div>
+              <div className="stat-change positive">
+                <span>↑</span>
+                Approval rate
+              </div>
+            </div>
+
+            <div className="stat-card time">
+              <span className="stat-icon">⏱️</span>
+              <div className="stat-label">Avg Time/Swipe</div>
+              <div className="stat-value">{data.matcha.avg_time_spent.toFixed(1)}s</div>
+              <div className="stat-change neutral">
+                <span>—</span>
+                Per interaction
+              </div>
+            </div>
+
+            <div className="stat-card time">
+              <span className="stat-icon">🕐</span>
+              <div className="stat-label">Total Time</div>
+              <div className="stat-value">{formatTime(data.matcha.total_time_spent)}</div>
+              <div className="stat-change neutral">
+                <span>—</span>
+                Time invested
+              </div>
             </div>
           </div>
-        )}
+        </section>
 
-        {/* AI Insights */}
-        {analyticsData?.ai_insights && analyticsData.ai_insights.length > 0 && (
-          <div className="insights-section">
-            <h2 className="section-title">AI Insights</h2>
-            <div className="insights-grid">
-              {analyticsData.ai_insights.map((insight, index) => (
-                <div key={index} className="insight-card">
-                  <div className="insight-icon">✨</div>
-                  <p className="insight-text">{insight}</p>
-                </div>
-              ))}
+        {/* Coffee Mode Stats */}
+        <section className="analytics-section">
+          <div className="section-header">
+            <h2 className="section-title">
+              <span>☕</span>
+              Coffee Mode
+            </h2>
+            <p className="section-subtitle">Your professional development journey</p>
+          </div>
+
+          <div className="stats-grid">
+            <div className="stat-card coffee">
+              <span className="stat-icon">👆</span>
+              <div className="stat-label">Total Swipes</div>
+              <div className="stat-value">{data.coffee.total_swipes}</div>
+              <div className="stat-change positive">
+                <span>↑</span>
+                Professional growth
+              </div>
+            </div>
+
+            <div className="stat-card coffee">
+              <span className="stat-icon">💚</span>
+              <div className="stat-label">Likes</div>
+              <div className="stat-value">{data.coffee.likes}</div>
+              <div className="stat-change positive">
+                <span>↑</span>
+                Right swipes
+              </div>
+            </div>
+
+            <div className="stat-card rejection">
+              <span className="stat-icon">👎</span>
+              <div className="stat-label">Dislikes</div>
+              <div className="stat-value">{data.coffee.dislikes}</div>
+              <div className="stat-change neutral">
+                <span>—</span>
+                Left swipes
+              </div>
+            </div>
+
+            <div className="stat-card rate">
+              <span className="stat-icon">📈</span>
+              <div className="stat-label">Like Rate</div>
+              <div className="stat-value">{data.coffee.like_rate.toFixed(1)}%</div>
+              <div className="stat-change positive">
+                <span>↑</span>
+                Approval rate
+              </div>
+            </div>
+
+            <div className="stat-card time">
+              <span className="stat-icon">⏱️</span>
+              <div className="stat-label">Avg Time/Swipe</div>
+              <div className="stat-value">{data.coffee.avg_time_spent.toFixed(1)}s</div>
+              <div className="stat-change neutral">
+                <span>—</span>
+                Per interaction
+              </div>
+            </div>
+
+            <div className="stat-card time">
+              <span className="stat-icon">🕐</span>
+              <div className="stat-label">Total Time</div>
+              <div className="stat-value">{formatTime(data.coffee.total_time_spent)}</div>
+              <div className="stat-change neutral">
+                <span>—</span>
+                Time invested
+              </div>
             </div>
           </div>
-        )}
+        </section>
 
-        {/* Empty State */}
-        {(!modeData || modeData.total_swipes === 0) && (
-          <div className="empty-state">
-            <div className="empty-icon">📭</div>
-            <h3 className="empty-title">No data yet</h3>
-            <p className="empty-description">
-              Start exploring opportunities to see your analytics!
+        {/* Chart Section */}
+        <section className="chart-section">
+          <div className="chart-header">
+            <h2 className="chart-title">Matcha vs Coffee Preferences</h2>
+            <p className="chart-subtitle">
+              Your balance between personal and professional activities
             </p>
-            <Link href="/matcha" className="empty-button">
-              Explore Matcha Mode
-            </Link>
           </div>
-        )}
+
+          <div className="chart-container">
+            {/* Matcha Bar */}
+            <div className="chart-bar-group">
+              <div 
+                className="chart-bar matcha" 
+                style={{ height: `${matchaHeight}px` }}
+              >
+                <span className="chart-value">{data.matcha.total_swipes}</span>
+              </div>
+              <div className="chart-label">
+                <span className="chart-icon">🍵</span>
+                Matcha
+              </div>
+            </div>
+
+            {/* Coffee Bar */}
+            <div className="chart-bar-group">
+              <div 
+                className="chart-bar coffee" 
+                style={{ height: `${coffeeHeight}px` }}
+              >
+                <span className="chart-value">{data.coffee.total_swipes}</span>
+              </div>
+              <div className="chart-label">
+                <span className="chart-icon">☕</span>
+                Coffee
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* AI Insight Section */}
+        <section className="insight-section">
+          <div className="insight-header">
+            <div className="insight-icon">🤖</div>
+            <div className="insight-title-wrapper">
+              <h2>Personalized AI Insight</h2>
+              <p>Based on your activity patterns</p>
+            </div>
+          </div>
+
+          <div className="insight-content">
+            {data.ai_insights.split('. ').map((sentence, index) => {
+              // Highlight percentages and numbers
+              const highlighted = sentence.replace(
+                /(\d+%|\d+)/g, 
+                '<span class="insight-highlight">$1</span>'
+              );
+              return (
+                <span key={index}>
+                  <span dangerouslySetInnerHTML={{ __html: highlighted }} />
+                  {index < data.ai_insights.split('. ').length - 1 ? '. ' : ''}
+                </span>
+              );
+            })}
+          </div>
+        </section>
       </main>
     </div>
   );
