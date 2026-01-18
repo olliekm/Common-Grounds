@@ -64,8 +64,9 @@ body {
 .cups-container {
   display: flex;
   justify-content: center;
-  gap: 20px;
+  align-items: center;
   margin-bottom: 50px;
+  animation: float 3s ease-in-out infinite;
 }
 
 .cup {
@@ -76,17 +77,19 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 36px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  margin: 0 -20px;
+  border: 8px solid;
+  background: transparent;
 }
 
 .cup-matcha {
-  background: linear-gradient(135deg, #88B68C 100%);
-  animation: float 3s ease-in-out infinite;
+  border-color: #88B68C;
+  z-index: 1;
 }
 
 .cup-coffee {
-  background: linear-gradient(135deg, #6d5647 100%);
-  animation: float 3s ease-in-out infinite 0.3s;
+  border-color: #6d5647;
+  z-index: 0;
 }
 
 .create-event-btn {
@@ -290,7 +293,7 @@ body {
 }
 
 .button-matcha {
-  background: #7a9d8f;
+  background: #88B68C;
 }
 
 .button-matcha:hover {

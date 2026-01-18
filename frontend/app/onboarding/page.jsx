@@ -145,7 +145,7 @@ export default function Onboarding() {
         {step === 1 && (
           <div className="step-content">
             <div className="step-icon">👋</div>
-            <h2 className="step-title">Welcome to Common Grounds!</h2>
+            <h2 className="step-title">Welcome to CommonGrounds!</h2>
             <p className="step-description">Let's start with your name</p>
             
             <div className="form-group">

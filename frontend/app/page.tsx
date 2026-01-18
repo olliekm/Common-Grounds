@@ -74,7 +74,7 @@ export default function CommonGrounds() {
       {/* Header */}
       <header className="header">
         <div className="logo">
-          <h1>Common Grounds</h1>
+          <h1>CommonGrounds</h1>
         </div>
 
         <div className="header-right">

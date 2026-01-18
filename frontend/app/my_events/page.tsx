@@ -102,7 +102,7 @@ export default function MyEvents() {
       {/* Header */}
       <header className="my-events-header">
         <Link href="/" style={{ textDecoration: 'none' }} className="logo">
-          <h1>Common Grounds</h1>
+          <h1>CommonGrounds</h1>
         </Link>
         <h1 className="header-title">My Events</h1>
         <div className="header-spacer"></div>
