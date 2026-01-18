@@ -208,10 +208,53 @@ def get_user(user_id: int):
 @app.get("/users/{user_id}/analytics", response_model=Dashboard)
 def get_user_analytics(user_id: int, matcha_mode: Optional[bool] = None):
     """Get analytics for a user, optionally filtered by mode."""
+    # Get user data
+    user_data = supabase.table("users").select("*").eq("id", user_id).execute()
+    if not user_data.data:
+        raise HTTPException(status_code=404, detail="User not found")
+    user = User(**user_data.data[0])
+    
+    # Get analytics data
     query = supabase.table("analytics").select("*").eq("user_id", user_id)
     if matcha_mode is not None:
         query = query.eq("matcha_mode", matcha_mode)
     data = query.execute()
-    dashboard = generate_dashboard([Analytics(**record) for record in data.data])
-
-    return dashboard
+    
+    # Convert to Analytics objects
+    analytics_list = [Analytics(**record) for record in data.data]
+    
+    # Generate dashboard using existing function
+    dashboard_data = generate_dashboard(user_id, analytics_list, gemini_client)
+    
+    # Transform the data to match frontend expectations
+    # Your analytics.py returns different field names than frontend expects
+    coffee_transformed = {
+        "total_swipes": dashboard_data.coffee["interactions"],
+        "likes": dashboard_data.coffee["swipes_right"],
+        "dislikes": dashboard_data.coffee["swipes_left"],
+        "like_rate": dashboard_data.coffee["like_rate"],
+        "avg_time_spent": dashboard_data.coffee["avg_time_per_interaction"],
+        "total_time_spent": dashboard_data.coffee["time_spent_seconds"],
+        "hesitation_score": dashboard_data.coffee["hesitation_score"],
+    }
+    
+    matcha_transformed = {
+        "total_swipes": dashboard_data.matcha["interactions"],
+        "likes": dashboard_data.matcha["swipes_right"],
+        "dislikes": dashboard_data.matcha["swipes_left"],
+        "like_rate": dashboard_data.matcha["like_rate"],
+        "avg_time_spent": dashboard_data.matcha["avg_time_per_interaction"],
+        "total_time_spent": dashboard_data.matcha["time_spent_seconds"],
+        "hesitation_score": dashboard_data.matcha["hesitation_score"],
+    }
+    
+    # Return transformed dashboard
+    return Dashboard(
+        person=user,
+        coffee=coffee_transformed,
+        matcha=matcha_transformed,
+        total_swipes=dashboard_data.total_swipes,
+        overall_like_rate=dashboard_data.overall_like_rate,
+        tags=dashboard_data.tags,
+        ai_insights=dashboard_data.ai_insights,
+    )

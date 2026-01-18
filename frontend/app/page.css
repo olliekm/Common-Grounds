@@ -47,10 +47,134 @@ body {
   color: #3d4f47;
 }
 
+/* Avatar Styles */
 .header-right {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 12px;
+}
+
+.avatar-link {
+  text-decoration: none;
+  display: block;
+  position: relative;
+}
+
+.user-avatar-header {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #B9967C 0%, #9d7d5f 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(185, 150, 124, 0.3);
+}
+
+.user-avatar-header:hover {
+  transform: scale(1.1) translateY(-2px);
+  box-shadow: 0 4px 16px rgba(185, 150, 124, 0.5);
+}
+
+.user-avatar-header:active {
+  transform: scale(1.05);
+}
+
+.avatar-initial {
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.5px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Animated ring on hover */
+.avatar-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: linear-gradient(135deg, #B9967C, #7a9d8f) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.user-avatar-header:hover .avatar-ring {
+  opacity: 1;
+  animation: rotate 3s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Tooltip on hover (optional) */
+.avatar-link::after {
+  content: 'View Profile';
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  background-color: #2d1b0e;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.avatar-link::before {
+  content: '';
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-bottom-color: #2d1b0e;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+.avatar-link:hover::after,
+.avatar-link:hover::before {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .user-avatar-header {
+    width: 38px;
+    height: 38px;
+  }
+  
+  .avatar-initial {
+    font-size: 16px;
+  }
+  
+  /* Hide tooltip on mobile */
+  .avatar-link::after,
+  .avatar-link::before {
+    display: none;
+  }
 }
 
 .notification-btn {
