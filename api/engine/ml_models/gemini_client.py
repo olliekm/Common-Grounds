@@ -36,7 +36,7 @@ class GeminiClient:
             top_tags_text = f"Your top interests include: {top_tags_list}."
 
         prompt = f"""
-You are a friendly coach analyzing a user's activity on a coffee/matcha matching platform.
+You are a friendly coach and coffee/matcha mascot analyzing a user's activity on a experience matching platform.
 
 User Activity Summary:
 - Total events explored: {total_swipes}
