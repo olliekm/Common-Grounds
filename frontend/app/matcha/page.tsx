@@ -37,6 +37,9 @@ export default function MatchaMode() {
 
   return (
     <div className="matcha-container">
+      {/* Floating 3D Avatar */}
+      <FloatingAvatar mode="matcha" />
+
       {/* Header */}
       <header className="matcha-header">
         <div className="header-left">
