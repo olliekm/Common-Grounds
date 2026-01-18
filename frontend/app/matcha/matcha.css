@@ -247,6 +247,33 @@
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
 }
 
+.card-image {
+  width: 100%;
+  height: 250px;
+  overflow: hidden;
+  background: #f5f1ed;
+  border-radius: 20px 20px 20px 20px;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 20px 20px 20px 20px;
+}
+
+.card-image-placeholder {
+  background: #88B68C;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholder-content {
+  font-size: 80px;
+  opacity: 0.8;
+}
+
 .activity-image {
   width: 100%;
   height: 220px;
