@@ -143,7 +143,7 @@ export default function MatchaMode() {
                 <line x1="14" y1="1" x2="14" y2="4"/>
               </svg>
             </div>
-            <span className="logo-text">Common Grounds</span>
+            <span className="logo-text">CommonGrounds</span>
           </Link>
         </div>
       

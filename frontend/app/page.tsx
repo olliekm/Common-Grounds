@@ -74,7 +74,7 @@ export default function CommonGrounds() {
       {/* Header */}
       <header className="header">
         <div className="logo">
-          <h1>Common Grounds</h1>
+          <h1>CommonGrounds</h1>
         </div>
 
         <div className="header-right">
@@ -88,6 +88,11 @@ export default function CommonGrounds() {
           </Link>
         </div>
       </header>
+
+      <div className="cups-container">
+            <div className="cup cup-matcha"></div>
+            <div className="cup cup-coffee"></div>
+      </div>
 
       {/* Main Content */}
       <main className="main">
