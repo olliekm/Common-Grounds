@@ -14,7 +14,9 @@ export default function Onboarding() {
     school: '',
     major: '',
     personalInterests: [],
-    professionalInterests: []
+    professionalInterests: [],
+    matchaBlurb: '',
+    coffeeBlurb: ''
   });
 
   // Your FastAPI backend URL
@@ -32,8 +34,10 @@ export default function Onboarding() {
     'Sales', 'Finance', 'Consulting', 'Teaching', 'Engineering'
   ];
 
+  const totalSteps = 6;
+
   const nextStep = () => {
-    if (step < 4) setStep(step + 1);
+    if (step < totalSteps) setStep(step + 1);
   };
 
   const prevStep = () => {
@@ -53,18 +57,6 @@ export default function Onboarding() {
     }
   };
 
-  // Generate matcha blurb from personal data
-  const generateMatchaBlurb = () => {
-    const interests = formData.personalInterests.slice(0, 3).join(', ');
-    return `${formData.name} enjoys ${interests.toLowerCase()}. Looking to explore creative hobbies and unwind.`;
-  };
-
-  // Generate coffee blurb from professional data
-  const generateCoffeeBlurb = () => {
-    const { school, major, professionalInterests } = formData;
-    const skills = professionalInterests.slice(0, 3).join(', ');
-    return `${major} student at ${school}. Interested in ${skills.toLowerCase()}. Seeking mentorship and professional growth opportunities.`;
-  };
 
   // Generate tags from all interests
   const generateTags = () => {
@@ -83,9 +75,6 @@ export default function Onboarding() {
     setError('');
 
     try {
-      // Generate blurbs and tags
-      const matchaBlurb = generateMatchaBlurb();
-      const coffeeBlurb = generateCoffeeBlurb();
       const tags = generateTags();
 
       // Call your FastAPI backend
@@ -96,8 +85,8 @@ export default function Onboarding() {
         },
         body: JSON.stringify({
           name: formData.name,
-          matcha_blurb: matchaBlurb,
-          coffee_blurb: coffeeBlurb,
+          matcha_blurb: formData.matchaBlurb,
+          coffee_blurb: formData.coffeeBlurb,
           tags: tags
         })
       });
@@ -128,6 +117,8 @@ export default function Onboarding() {
       case 2: return formData.school.trim().length > 0 && formData.major.trim().length > 0;
       case 3: return formData.personalInterests.length > 0;
       case 4: return formData.professionalInterests.length > 0;
+      case 5: return formData.matchaBlurb.trim().length > 0;
+      case 6: return formData.coffeeBlurb.trim().length > 0;
       default: return false;
     }
   };
@@ -138,9 +129,9 @@ export default function Onboarding() {
         {/* Progress Bar */}
         <div className="progress-container">
           <div className="progress-bar">
-            <div className="progress-fill" style={{ width: `${(step / 4) * 100}%` }}></div>
+            <div className="progress-fill" style={{ width: `${(step / totalSteps) * 100}%` }}></div>
           </div>
-          <p className="progress-text">Step {step} of 4</p>
+          <p className="progress-text">Step {step} of {totalSteps}</p>
         </div>
 
         {/* Error Message */}
@@ -236,7 +227,7 @@ export default function Onboarding() {
             <div className="step-icon">☕</div>
             <h2 className="step-title">Professional Pulse</h2>
             <p className="step-description">What drives your career forward?</p>
-            
+
             <div className="checklist-container">
               {professionalOptions.map((interest) => (
                 <label key={interest} className="checkbox-item">
@@ -252,6 +243,48 @@ export default function Onboarding() {
           </div>
         )}
 
+        {/* Step 5: Matcha Blurb */}
+        {step === 5 && (
+          <div className="step-content">
+            <div className="step-icon">🍵</div>
+            <h2 className="step-title">Your Matcha Vibe</h2>
+            <p className="step-description">Tell us about your personal side - hobbies, passions, what helps you unwind</p>
+
+            <div className="form-group">
+              <label>Write a short blurb about yourself for personal/hobby events</label>
+              <textarea
+                placeholder="e.g., I love weekend hikes, trying new coffee shops, and getting lost in a good book. Looking to meet people who enjoy creative activities and outdoor adventures."
+                value={formData.matchaBlurb}
+                onChange={(e) => updateField('matchaBlurb', e.target.value)}
+                className="text-input textarea-input"
+                rows={4}
+              />
+              <p className="input-hint">This helps us match you with personal and hobby events</p>
+            </div>
+          </div>
+        )}
+
+        {/* Step 6: Coffee Blurb */}
+        {step === 6 && (
+          <div className="step-content">
+            <div className="step-icon">☕</div>
+            <h2 className="step-title">Your Coffee Pitch</h2>
+            <p className="step-description">Share your professional goals and what you're looking to achieve</p>
+
+            <div className="form-group">
+              <label>Write a short blurb about your professional interests</label>
+              <textarea
+                placeholder="e.g., CS student passionate about AI/ML and product development. Looking to connect with mentors in tech and find internship opportunities in startups."
+                value={formData.coffeeBlurb}
+                onChange={(e) => updateField('coffeeBlurb', e.target.value)}
+                className="text-input textarea-input"
+                rows={4}
+              />
+              <p className="input-hint">This helps us match you with professional and career events</p>
+            </div>
+          </div>
+        )}
+
         {/* Navigation Buttons */}
         <div className="button-group">
           {step > 1 && (
@@ -259,18 +292,18 @@ export default function Onboarding() {
               Back
             </button>
           )}
-          
-          {step < 4 ? (
-            <button 
-              onClick={nextStep} 
+
+          {step < totalSteps ? (
+            <button
+              onClick={nextStep}
               className="btn btn-primary"
               disabled={!canProceed()}
             >
               Continue
             </button>
           ) : (
-            <button 
-              onClick={handleFinish} 
+            <button
+              onClick={handleFinish}
               className="btn btn-primary btn-finish"
               disabled={!canProceed() || loading}
             >

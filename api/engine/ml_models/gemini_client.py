@@ -55,6 +55,38 @@ Tone: Friendly, positive, personalized. Return plain text only.
         response = self.generate_content(prompt)
         return response.text.strip()
 
+    def augment_user_description(self, base_description: str, analytics_text: str) -> str:
+        """
+        Augment user description with analytics insights for better recommendations.
+
+        :param base_description: User's blurb + tags combined
+        :param analytics_text: String representation of user's swipe analytics
+        :return: Augmented description for embedding
+        """
+        if not analytics_text or analytics_text == "{'mode': True, 'time_spent_seconds': 0, 'swipes_right': 0, 'swipes_left': 0, 'interactions': 0, 'avg_time_per_interaction': 0.0, 'like_rate': 0.0, 'hesitation_score': 0.0}" or analytics_text == "{'mode': False, 'time_spent_seconds': 0, 'swipes_right': 0, 'swipes_left': 0, 'interactions': 0, 'avg_time_per_interaction': 0.0, 'like_rate': 0.0, 'hesitation_score': 0.0}":
+            # No analytics data yet, return base description as-is
+            return base_description
+
+        prompt = f"""
+You are helping personalize event recommendations. Given a user's profile description and their recent activity analytics, create an enhanced description that captures their interests.
+
+User Profile:
+{base_description}
+
+Recent Activity Analytics:
+{analytics_text}
+
+Task:
+Create a brief, enhanced description (2-3 sentences max) that combines the user's stated interests with patterns from their behavior. Focus on specific topics and themes they seem drawn to. Return plain text only, no formatting.
+"""
+        try:
+            response = self.generate_content(prompt)
+            return response.text.strip()
+        except Exception as e:
+            # If Gemini fails, return the base description
+            print(f"Gemini augmentation failed: {e}")
+            return base_description
+
     def extract_recent_interests(self, recent_events: list[dict]) -> str:
         """
         Analyze the last 5 seen events and extract emerging interest patterns.
