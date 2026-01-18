@@ -21,6 +21,7 @@ class User(BaseModel):
     tags: Optional[list[Any]] = None
     embeddings: Optional[Dict[str, Any]] = None
     seen: Optional[list[Any]] = None
+    liked_events: Optional[list[int]] = None
 
 
 class UserCreate(BaseModel):
