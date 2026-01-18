@@ -12,57 +12,59 @@ interface UserData {
 
 export default function CommonGrounds() {
   const router = useRouter();
-  const [hoveredCard, setHoveredCard] = useState(null);
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Your FastAPI backend URL
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
   useEffect(() => {
     loadUserData();
   }, [router]);
 
   const loadUserData = async () => {
-    // Check if user has completed onboarding
     const userId = localStorage.getItem('userId');
-    
+    const userName = localStorage.getItem('userName');
+
     if (!userId) {
-      // No user ID found, redirect to onboarding
       router.push('/onboarding');
       return;
     }
 
     try {
-      // Fetch user data from FastAPI backend
       const response = await fetch(`${API_URL}/users/${userId}`);
-      
+
+      if (response.status === 404) {
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('onboardingComplete');
+        router.push('/onboarding');
+        return;
+      }
+
       if (!response.ok) {
-        throw new Error('User not found');
+        console.error('Server error, using cached data');
+        setUserData({ name: userName || 'User' });
+        setLoading(false);
+        return;
       }
 
       const data = await response.json();
       setUserData(data);
       setLoading(false);
     } catch (err) {
-      console.error('Error fetching user:', err);
-      // If user not found in backend, redirect to onboarding
-      localStorage.removeItem('userId');
-      localStorage.removeItem('onboardingComplete');
-      router.push('/onboarding');
+      console.error('Network error, using cached data:', err);
+      setUserData({ name: userName || 'User' });
+      setLoading(false);
     }
   };
 
   if (loading) {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        backgroundColor: '#faf9f7'
-      }}>
-        <div style={{ fontSize: '48px' }}>🍵</div>
+      <div className="loading-screen">
+        <div className="loading-content">
+          <div className="loading-spinner"></div>
+        </div>
       </div>
     );
   }
@@ -72,22 +74,16 @@ export default function CommonGrounds() {
       {/* Header */}
       <header className="header">
         <div className="logo">
-          <div className="logo-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-              <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
-              <line x1="6" y1="1" x2="6" y2="4"/>
-              <line x1="10" y1="1" x2="10" y2="4"/>
-              <line x1="14" y1="1" x2="14" y2="4"/>
-            </svg>
-          </div>
           <h1>Common Grounds</h1>
         </div>
 
         <div className="header-right">
+          <Link href="/brew_event" className="create-event-btn">
+            Create Event
+          </Link>
           <Link href="/profile" className="avatar-link">
             <div className="user-avatar-header">
               <span className="avatar-initial">{userData?.name?.charAt(0).toUpperCase() || 'U'}</span>
-              <div className="avatar-ring"></div>
             </div>
           </Link>
         </div>
@@ -98,49 +94,28 @@ export default function CommonGrounds() {
         {/* Hero Section */}
         <div className="hero">
           <p className="subtitle">Ready to brew some balance today?</p>
-          
-          <div className="cups-container">
-            <div className="cup cup-matcha"></div>
-            <div className="cup cup-coffee"></div>
-          </div>
 
           <h2 className="title">
             Welcome to your <span className="title-accent">cozy corner.</span>
           </h2>
-          
+
           <p className="description">
-            Find your perfect blend. 
+            Find your perfect blend.
           </p>
         </div>
 
         {/* Cards */}
         <div className="cards-grid">
           {/* Matcha card */}
-          <div 
+          <div
             className={`card card-personal ${hoveredCard === 'personal' ? 'card-hover' : ''}`}
             onMouseEnter={() => setHoveredCard('personal')}
             onMouseLeave={() => setHoveredCard(null)}
           >
-            <div className="card-header">
-              <div className="card-icon">
-                <svg 
-                  width="28"           
-                  height="28" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="#7a9d8f"    
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
-                  <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
-                </svg>
-              </div>
-            </div>
+            <div className="card-badge">Personal</div>
 
             <h3 className="card-title">Matcha Mode</h3>
-            
+
             <p className="card-description">
               Nurture your soul. Tend to your personal garden of wellbeing.
             </p>
@@ -152,47 +127,28 @@ export default function CommonGrounds() {
             </div>
 
             <Link href="/matcha" className="button button-matcha">
-              Enter Matcha Mode 
+              Enter Matcha Mode
             </Link>
           </div>
 
           {/* Coffee Card */}
-          <div 
+          <div
             className={`card card-professional ${hoveredCard === 'professional' ? 'card-hover' : ''}`}
             onMouseEnter={() => setHoveredCard('professional')}
             onMouseLeave={() => setHoveredCard(null)}
           >
-            <div className="card-header">
-              <div className="card-icon">
-                <svg 
-                  width="28" 
-                  height="28" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="#B9967C" 
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
-                  <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z" />
-                  <line x1="6" y1="1" x2="6" y2="4" />
-                  <line x1="10" y1="1" x2="10" y2="4" />
-                  <line x1="14" y1="1" x2="14" y2="4" />
-                </svg>
-              </div>
-            </div>
+            <div className="card-badge">Professional</div>
 
             <h3 className="card-title">Coffee Mode</h3>
-            
+
             <p className="card-description">
-              Let's brew success.
+              Let's brew success. Network, learn, and grow your career.
             </p>
 
             <div className="tags">
-              <span className="tag">Design Review</span>
-              <span className="tag">Project Alpha</span>
-              <span className="tag">Team Standup</span>
+              <span className="tag">Networking</span>
+              <span className="tag">Workshops</span>
+              <span className="tag">Mentorship</span>
             </div>
 
             <Link href="/coffee" className="button button-coffee">
@@ -204,13 +160,8 @@ export default function CommonGrounds() {
 
       {/* Footer */}
       <footer className="footer">
-        <div className="footer-links">
-          <a href="#">How it works</a>
-          <a href="#">Community</a>
-          <a href="#">Privacy</a>
-        </div>
         <p className="footer-text">
-          © 2024 Common Grounds • Made with love & caffeine (and matcha!)
+          Common Grounds
         </p>
       </footer>
     </div>

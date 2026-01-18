@@ -159,6 +159,9 @@ export default function MatchaMode() {
       {/* Main Content */}
       <main className="matcha-main">
         <section className="hero-section">
+          {/* 3D Avatar */}
+          <FloatingAvatar mode="matcha" />
+
           <h1 className="hero-title">
             Time to <span className="hero-accent">unwind.</span>
           </h1>
