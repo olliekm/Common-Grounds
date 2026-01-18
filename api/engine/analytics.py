@@ -17,7 +17,7 @@ from models import (
 	Dashboard,
 	SwipeDirection,
 )
-from .ml_models.gemini_client import GeminiClient
+from .ml_models.openai_client import OpenAIClient
 
 
 def _safe_div(numerator: float, denominator: float) -> float:
@@ -69,7 +69,7 @@ def _tag_breakdown(swipes: Iterable[Analytics]) -> Dict[str, Any]:
 	return {"top_tags": [], "total_tagged_swipes": 0}
 
 
-def generate_dashboard(user_id: int, swipes: List[Analytics], gemini_client: Optional[GeminiClient] = None) -> Dashboard:
+def generate_dashboard(user_id: int, swipes: List[Analytics], openai_client: Optional[OpenAIClient] = None) -> Dashboard:
 	"""Aggregate raw swipes into a dashboard-friendly snapshot."""
 
 	matcha_metrics = aggregate_mode(swipes, True)
@@ -83,10 +83,10 @@ def generate_dashboard(user_id: int, swipes: List[Analytics], gemini_client: Opt
 
 	tags = _tag_breakdown(swipes)
 
-	# Generate AI insights using GeminiClient if provided
+	# Generate AI insights using OpenAIClient if provided
 	ai_insights: List[str] = []
-	if gemini_client:
-		insight = gemini_client.generate_user_encouragement(
+	if openai_client:
+		insight = openai_client.generate_user_encouragement(
 			coffee_metrics,
 			matcha_metrics,
 			tags,

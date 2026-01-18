@@ -8,11 +8,9 @@ import numpy as np
 from engine.analytics import generate_dashboard
 from fastapi.middleware.cors import CORSMiddleware
 
-from engine.ml_models.gemini_client import GeminiClient
+from engine.ml_models.openai_client import OpenAIClient
 from engine.ml_models.embedding_toolbox import EmbeddingToolbox
 from engine.recommendation_engine import recommend_events
-
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 load_dotenv()
 
@@ -40,7 +38,7 @@ supabase: Client = create_client(
     os.environ.get("SUPABASE_KEY", "")
 )
 
-gemini_client = GeminiClient()
+openai_client = OpenAIClient()
 
 embedding_toolbox = EmbeddingToolbox()
 embedding_toolbox.instantiate()
@@ -116,7 +114,7 @@ def get_events(user_id: int, matcha_mode: bool, limit: int = 10):
             EmbeddingToolbox=embedding_toolbox,
             user_blurb=user_blurb,
             user_tags=user_tags,
-            GeminiClient=gemini_client,
+            OpenAIClient=openai_client,
             swipes=swipes,
             matcha_mode=matcha_mode,
             top_k=limit
@@ -279,7 +277,7 @@ def get_user_analytics(user_id: int, matcha_mode: Optional[bool] = None):
     analytics_list = [Analytics(**record) for record in data.data]
     
     # Generate dashboard using existing function
-    dashboard_data = generate_dashboard(user_id, analytics_list, gemini_client)
+    dashboard_data = generate_dashboard(user_id, analytics_list, openai_client)
     
     # Transform the data to match frontend expectations
     # Your analytics.py returns different field names than frontend expects
@@ -302,7 +300,14 @@ def get_user_analytics(user_id: int, matcha_mode: Optional[bool] = None):
         "total_time_spent": dashboard_data.matcha["time_spent_seconds"],
         "hesitation_score": dashboard_data.matcha["hesitation_score"],
     }
-    
+
+    # Transform tags from {"top_tags": [["music", 5], ...]} to {"music": 5, ...}
+    tags_transformed = {}
+    if dashboard_data.tags.get("top_tags"):
+        for tag_tuple in dashboard_data.tags["top_tags"]:
+            if len(tag_tuple) >= 2:
+                tags_transformed[tag_tuple[0]] = tag_tuple[1]
+
     # Return transformed dashboard
     return Dashboard(
         person=user,
@@ -310,6 +315,6 @@ def get_user_analytics(user_id: int, matcha_mode: Optional[bool] = None):
         matcha=matcha_transformed,
         total_swipes=dashboard_data.total_swipes,
         overall_like_rate=dashboard_data.overall_like_rate,
-        tags=dashboard_data.tags,
+        tags=tags_transformed,
         ai_insights=dashboard_data.ai_insights,
     )

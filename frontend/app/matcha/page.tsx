@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import FloatingAvatar from '@/components/FloatingAvatar';
 import Link from 'next/link';
 import './matcha.css';
 
@@ -131,7 +130,6 @@ export default function MatchaMode() {
 
   return (
     <div className="matcha-container">
-      <FloatingAvatar mode="matcha" />
 
       {/* Header */}
       <header className="matcha-header">
@@ -160,8 +158,6 @@ export default function MatchaMode() {
       <main className="matcha-main">
         <section className="hero-section">
           {/* 3D Avatar */}
-          <FloatingAvatar mode="matcha" />
-
           <h1 className="hero-title">
             Time to <span className="hero-accent">unwind.</span>
           </h1>
