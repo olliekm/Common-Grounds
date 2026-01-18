@@ -64,7 +64,7 @@ interface Avatar3DProps {
 }
 
 export default function Avatar3D({ mode }: Avatar3DProps) {
-  const modelPath = mode === 'matcha' ? '/glb/matcha.glb' : '/glb/coffee.glb';
+  const modelPath = mode === 'matcha' ? '/glb/matcha/matcha.glb' : '/glb/coffee/coffee.glb';
   const animationType = mode === 'matcha' ? 'calm' : 'energetic';
 
   return (
