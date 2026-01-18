@@ -35,6 +35,14 @@
   z-index: 100;
 }
 
+.logo h1 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #2d3e36;
+  letter-spacing: -0.02em;
+}
+
 .home-button {
   display: flex;
   align-items: center;

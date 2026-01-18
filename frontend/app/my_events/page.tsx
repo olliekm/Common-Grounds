@@ -101,9 +101,8 @@ export default function MyEvents() {
     <div className={`my-events-container mode-${mode}`}>
       {/* Header */}
       <header className="my-events-header">
-        <Link href="/" className="home-button">
-          <span className="home-icon">🏠</span>
-          Home
+        <Link href="/" style={{ textDecoration: 'none' }} className="logo">
+          <h1>Common Grounds</h1>
         </Link>
         <h1 className="header-title">My Events</h1>
         <div className="header-spacer"></div>
