@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from datetime import datetime, timedelta
 from enum import Enum
 
@@ -82,7 +82,7 @@ class Analytics(BaseModel):
     matcha_mode: Optional[bool] = None
 
 class Dashboard(BaseModel):
-    person: User
+    person: Union[User, int]  # Can be User object or user_id int
     coffee: Dict[str, Any]
     matcha: Dict[str, Any]
     total_swipes: int

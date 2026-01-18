@@ -59,17 +59,14 @@ def _seconds(value: timedelta | None) -> float:
 	return 0.0
 
 
-def _tag_breakdown(swipes: Iterable[AnalyticsSwipe]) -> Dict[str, Any]:
-	counter: Counter[str] = Counter()
-	tagged_swipes = 0
-	for swipe in swipes:
-		if not swipe.tags:
-			continue
-		tagged_swipes += 1
-		counter.update(tag.strip().lower() for tag in swipe.tags if tag.strip())
-
-	top_tags = counter.most_common(5)
-	return {"top_tags": top_tags, "total_tagged_swipes": tagged_swipes}
+def _tag_breakdown(swipes: Iterable[Analytics]) -> Dict[str, Any]:
+	"""
+	Placeholder for tag breakdown - Analytics records don't contain tags.
+	Returns empty structure for compatibility.
+	"""
+	# Analytics model doesn't have tags - would need to join with events table
+	# For now, return empty structure
+	return {"top_tags": [], "total_tagged_swipes": 0}
 
 
 def generate_dashboard(user_id: int, swipes: List[Analytics], gemini_client: Optional[GeminiClient] = None) -> Dashboard:
@@ -89,12 +86,14 @@ def generate_dashboard(user_id: int, swipes: List[Analytics], gemini_client: Opt
 	# Generate AI insights using GeminiClient if provided
 	ai_insights: List[str] = []
 	if gemini_client:
-		ai_insights = gemini_client.generate_user_encouragement(
+		insight = gemini_client.generate_user_encouragement(
 			coffee_metrics,
 			matcha_metrics,
 			tags,
 			total_swipes
 		)
+		# generate_user_encouragement returns a string, wrap in list
+		ai_insights = [insight] if insight else []
 
 	return Dashboard(
 		person=user_id,
