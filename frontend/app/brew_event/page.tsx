@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import './brew_event.css';
+import './brew-event.css';
 
 type Mode = 'matcha' | 'coffee';
 
@@ -96,20 +96,20 @@ export default function BrewEvent() {
     setError('');
 
     try {
-      // Create FormData to handle file upload
-      const submitData = new FormData();
-      submitData.append('title', formData.title);
-      submitData.append('description', formData.description);
-      submitData.append('mode', mode);
-      submitData.append('tags', JSON.stringify(formData.tags));
-      
-      if (imageFile) {
-        submitData.append('image', imageFile);
-      }
+      // Prepare JSON data in the required format
+      const submitData = {
+        title: formData.title,
+        description: formData.description,
+        tags: formData.tags,
+        matcha_mode: mode === 'matcha'
+      };
 
       const response = await fetch(`${API_URL}/events`, {
         method: 'POST',
-        body: submitData
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submitData)
       });
 
       if (!response.ok) {
