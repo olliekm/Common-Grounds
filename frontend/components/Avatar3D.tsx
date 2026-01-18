@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -14,14 +14,25 @@ function AnimatedModel({ modelPath, animationType }: AnimatedModelProps) {
   const { scene } = useGLTF(modelPath);
   const modelRef = useRef<THREE.Group>(null);
 
+  // Suppress texture errors by applying fallback materials
+  useEffect(() => {
+    scene.traverse((child) => {
+      if (child instanceof THREE.Mesh && child.material) {
+        const material = child.material as THREE.MeshStandardMaterial;
+        // If texture is missing, just use a solid color
+        if (!material.map) {
+          material.color.set(animationType === 'calm' ? '#9dbbae' : '#B9967C');
+        }
+      }
+    });
+  }, [scene, animationType]);
+
   useFrame((state) => {
     if (modelRef.current) {
       if (animationType === 'calm') {
-        // Matcha: Gentle floating
         modelRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.1;
         modelRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.2;
       } else {
-        // Coffee: Bouncy
         modelRef.current.position.y = Math.abs(Math.sin(state.clock.elapsedTime * 1.5)) * 0.15;
         modelRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 2) * 0.1;
       }
@@ -36,7 +47,7 @@ interface Avatar3DProps {
 }
 
 export default function Avatar3D({ mode }: Avatar3DProps) {
-  const modelPath = mode === 'matcha' ? 'glb/matcha.glb' : '/glb/coffee.glb';
+  const modelPath = mode === 'matcha' ? '/glb/matcha.glb' : '/glb/coffee.glb';
   const animationType = mode === 'matcha' ? 'calm' : 'energetic';
 
   return (

@@ -14,7 +14,6 @@ export default function CommonGrounds() {
   // Your FastAPI backend URL
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-  /*
   useEffect(() => {
     loadUserData();
   }, [router]);
@@ -62,7 +61,6 @@ export default function CommonGrounds() {
       </div>
     );
   }
-  */
 
   return (
     <div className="container">
