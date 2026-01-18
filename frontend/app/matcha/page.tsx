@@ -287,11 +287,6 @@ export default function MatchaMode() {
           )}
         </section>
       </main>
-
-      <button className="floating-chat-button">
-        <span className="chat-icon">💬</span>
-        <span className="chat-tooltip">Let's find something relaxing to do today!</span>
-      </button>
     </div>
   );
 }
