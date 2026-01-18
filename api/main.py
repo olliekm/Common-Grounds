@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from supabase import create_client, Client
 import numpy as np
 from engine.analytics import generate_dashboard
+from fastapi.middleware.cors import CORSMiddleware
 
 from engine.ml_models.gemini_client import GeminiClient
 from engine.ml_models.embedding_toolbox import EmbeddingToolbox
