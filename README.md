@@ -1,12 +1,12 @@
-# ☕ CoffeeGrounds
+# ☕ CommonGrounds
 
-**CoffeeGrounds** is a swipe-based platform that helps students discover opportunities that reflect who they are and who they’re becoming.
+**CommonGrounds** is a swipe-based platform that helps students discover opportunities that reflect who they are and who they’re becoming.
 
-In a world hyper-focused on internships and networking, it’s easy to get stuck in the same loops. CoffeeGrounds encourages exploration beyond the mundane by letting identity form through interaction, not pressure.
+In a world hyper-focused on internships and networking, it’s easy to get stuck in the same loops. CommonGrounds encourages exploration beyond the mundane by letting identity form through interaction, not pressure.
 
 ---
 ## 🔨 How to Run
-Download this repo, open the CoffeeGrounds folders then do the following in the terminal.
+Download this repo, open the CommonGrounds folders then do the following in the terminal.
 ```bash
 # download requirements and start backend server
 # begin at root
@@ -25,7 +25,7 @@ npm run dev
 
 ## 🌱 Identity in Action
 
-CoffeeGrounds treats identity as something dynamic. Instead of forcing users to define themselves upfront, the platform learns from how they explore, swipe, and engage.
+CommonGrounds treats identity as something dynamic. Instead of forcing users to define themselves upfront, the platform learns from how they explore, swipe, and engage.
 
 ### 🍵 Personalize Your Blend
 
@@ -38,7 +38,7 @@ This separation allows users to explore different sides of their identity withou
 
 ### 🤖 AI Personalization
 
-CoffeeGrounds adapts recommendations over time using user behavior.
+CommonGrounds adapts recommendations over time using user behavior.
 
 * User profiles + event descriptions are embedded using **all-MiniLM-L6-v2**
 * Swipes and time spent continuously update user embeddings
@@ -71,4 +71,4 @@ Users can view stats about their activity and receive AI-generated insights sugg
 
 ---
 
-CoffeeGrounds explores identity not as a label, but as something discovered through curiosity, interaction, and choice.
+CommonGrounds explores identity not as a label, but as something discovered through curiosity, interaction, and choice.
