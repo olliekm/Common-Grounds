@@ -37,7 +37,7 @@ class Event(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     tags: Optional[list[Any]] = None
-    mode: Optional[list[Any]] = None  # matcha/coffee modes
+    matcha_mode: Optional[bool] = None
     embeddings: Optional[Dict[str, Any]] = None
 
 
@@ -45,7 +45,7 @@ class EventCreate(BaseModel):
     title: str
     description: Optional[str] = None
     tags: Optional[list[Any]] = None
-    mode: Optional[list[Any]] = None
+    matcha_mode: bool
 
 
 # Analytics/Swipe models

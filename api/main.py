@@ -39,7 +39,21 @@ embedding_toolbox.instantiate()
 @app.post("/events", response_model=Event)
 def create_event(event: EventCreate):
     """Create a new event."""
-    data = supabase.table("events").insert(event.model_dump()).execute()
+    tags = event.tags or []
+    description = event.description or ""
+    title = event.title
+
+    # Generate embedding for the designated mode
+    embedding = embedding_toolbox.encode(description, tags, title)
+    embedding_list = embedding.tolist() if hasattr(embedding, 'tolist') else list(embedding)
+
+    event_data = event.model_dump()
+    if event.matcha_mode:
+        event_data["embeddings"] = {"matcha": embedding_list}
+    else:
+        event_data["embeddings"] = {"coffee": embedding_list}
+
+    data = supabase.table("events").insert(event_data).execute()
     return data.data[0]
 
 
@@ -60,8 +74,8 @@ def get_events(user_id: int, matcha_mode: bool, limit: int = 10):
     user_blurb = user.get("matcha_blurb") if matcha_mode else user.get("coffee_blurb")
     user_blurb = user_blurb or ""
 
-    # Get all events with embeddings
-    events_data = supabase.table("events").select("*").execute()
+    # Get events for the requested mode
+    events_data = supabase.table("events").select("*").eq("matcha_mode", matcha_mode).execute()
     all_events = events_data.data
 
     # Build event embeddings dictionary {event_id: embedding}
@@ -142,8 +156,6 @@ def swipe_event(swipe: SwipeRequest):
         liked=liked,
         matcha_mode=swipe.matcha_mode,
     )
-# TODO: Create event endpoint
-# TODO: Emdbed event
 
 # Users
 @app.post("/users", response_model=User)
@@ -153,8 +165,8 @@ def create_user(user: UserCreate):
     coffee_blurb = user.coffee_blurb or ""
     matcha_blurb = user.matcha_blurb or ""
 
-    coffee_embedding = embedding_toolbox.encode(coffee_blurb, tags)
-    matcha_embedding = embedding_toolbox.encode(matcha_blurb, tags)
+    coffee_embedding = embedding_toolbox.encode(coffee_blurb, tags, None)
+    matcha_embedding = embedding_toolbox.encode(matcha_blurb, tags, None)
 
     # Convert numpy arrays to Python lists
     coffee_embeddings = coffee_embedding.tolist() if hasattr(coffee_embedding, 'tolist') else list(coffee_embedding)
