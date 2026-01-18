@@ -283,10 +283,12 @@ export default function CoffeeMode() {
         </section>
       </main>
 
+      {/*
       <button className="floating-chat-button">
         <span className="chat-icon">💬</span>
         <span className="chat-tooltip">Let's find your next opportunity!</span>
       </button>
+      */}
     </div>
   );
 }
