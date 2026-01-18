@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from supabase import create_client, Client
 import numpy as np
 from engine.analytics import generate_dashboard
+from fastapi.middleware.cors import CORSMiddleware
 
 from engine.ml_models.gemini_client import GeminiClient
 from engine.ml_models.embedding_toolbox import EmbeddingToolbox
@@ -23,6 +24,18 @@ from models import (
 )
 
 app = FastAPI()
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",  # Next.js dev server
+        "http://127.0.0.1:3000",  # Alternative localhost
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Supabase client
 supabase: Client = create_client(

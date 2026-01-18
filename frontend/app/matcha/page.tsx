@@ -1,9 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import FloatingAvatar from '@/components/FloatingAvatar';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import './matcha.css';
+
+const FloatingAvatar = dynamic(
+  () => import('@/components/FloatingAvatar'),
+  { ssr: false }
+);
 
 export default function MatchaMode() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -75,9 +80,20 @@ export default function MatchaMode() {
           {/* Search Bar */}
           <div className="search-container">
             <div className="search-wrapper">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search">
-              <path d="m21 21-4.34-4.34"/>
-              <circle cx="11" cy="11" r="8"/>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="lucide lucide-search-icon lucide-search"
+              >
+                <path d="m21 21-4.34-4.34" />
+                <circle cx="11" cy="11" r="8" />
               </svg>
               <input
                 type="text"

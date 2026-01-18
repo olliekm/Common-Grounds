@@ -1,11 +1,66 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import './page.css';
 
 export default function CommonGrounds() {
+  const router = useRouter();
   const [hoveredCard, setHoveredCard] = useState(null);
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Your FastAPI backend URL
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+  useEffect(() => {
+    loadUserData();
+  }, [router]);
+
+  const loadUserData = async () => {
+    // Check if user has completed onboarding
+    const userId = localStorage.getItem('userId');
+    
+    if (!userId) {
+      // No user ID found, redirect to onboarding
+      router.push('/onboarding');
+      return;
+    }
+
+    try {
+      // Fetch user data from FastAPI backend
+      const response = await fetch(`${API_URL}/users/${userId}`);
+      
+      if (!response.ok) {
+        throw new Error('User not found');
+      }
+
+      const data = await response.json();
+      setUserData(data);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching user:', err);
+      // If user not found in backend, redirect to onboarding
+      localStorage.removeItem('userId');
+      localStorage.removeItem('onboardingComplete');
+      router.push('/onboarding');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        backgroundColor: '#faf9f7'
+      }}>
+        <div style={{ fontSize: '48px' }}>🍵</div>
+      </div>
+    );
+  }
 
   return (
     <div className="container">
@@ -24,7 +79,9 @@ export default function CommonGrounds() {
         </div>
         
         <div className="header-right">
+          <Link href="/profile">
           <div className="avatar"></div>
+          </Link>
         </div>
       </header>
 
