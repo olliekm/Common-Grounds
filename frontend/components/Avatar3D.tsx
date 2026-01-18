@@ -60,11 +60,11 @@ function AnimatedModel({ modelPath, animationType }) {
 }
 
 interface Avatar3DProps {
-  mode: 'matcha' | 'coffee';
+  mode: 'matcha';
 }
 
 export default function Avatar3D({ mode }: Avatar3DProps) {
-  const modelPath = mode === 'matcha' ? '/glb/matcha/matcha.glb' : '/glb/coffee/coffee.glb';
+  const modelPath = '/glb/matcha/matcha.glb';
   const animationType = mode === 'matcha' ? 'calm' : 'energetic';
 
   return (
@@ -79,7 +79,6 @@ export default function Avatar3D({ mode }: Avatar3DProps) {
     onCreated={({ gl }) => {
       gl.setClearColor(0x000000, 0); // transparent
     }}
-
   >
 {/* Base fill — removes darkness completely */}
 <ambientLight intensity={2.5} />

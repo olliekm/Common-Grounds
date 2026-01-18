@@ -169,7 +169,7 @@ export default function MatchaMode() {
             Swipe right on activities that speak to your soul.
           </p>
 
-          {!noEventsAvailable && (
+          {!noEventsAvailable && hasMoreEvents && (
             <div className="swipe-progress">
               <span className="progress-text">{currentIndex + 1} / {events.length}</span>
               <div className="progress-bar-container">
@@ -286,26 +286,6 @@ export default function MatchaMode() {
             </div>
           )}
         </section>
-
-        {!noEventsAvailable && (
-          <section className="tips-section">
-            <h3 className="tips-title">💡 Quick Tips</h3>
-            <div className="tips-grid">
-              <div className="tip-item">
-                <span className="tip-icon">👈</span>
-                <span className="tip-text">Swipe left to pass</span>
-              </div>
-              <div className="tip-item">
-                <span className="tip-icon">👉</span>
-                <span className="tip-text">Swipe right if interested</span>
-              </div>
-              <div className="tip-item">
-                <span className="tip-icon">⌨️</span>
-                <span className="tip-text">Use arrow keys on desktop</span>
-              </div>
-            </div>
-          </section>
-        )}
       </main>
 
       <button className="floating-chat-button">
