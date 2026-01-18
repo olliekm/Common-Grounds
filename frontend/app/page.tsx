@@ -5,10 +5,15 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import './page.css';
 
+interface UserData {
+  name: string;
+  [key: string]: any;
+}
+
 export default function CommonGrounds() {
   const router = useRouter();
   const [hoveredCard, setHoveredCard] = useState(null);
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Your FastAPI backend URL
@@ -77,10 +82,13 @@ export default function CommonGrounds() {
           </div>
           <h1>Common Grounds</h1>
         </div>
-        
+
         <div className="header-right">
-          <Link href="/profile">
-          <div className="avatar"></div>
+          <Link href="/profile" className="avatar-link">
+            <div className="user-avatar-header">
+              <span className="avatar-initial">{userData?.name?.charAt(0).toUpperCase() || 'U'}</span>
+              <div className="avatar-ring"></div>
+            </div>
           </Link>
         </div>
       </header>
@@ -190,24 +198,6 @@ export default function CommonGrounds() {
             <Link href="/coffee" className="button button-coffee">
               Enter Coffee Mode
             </Link>
-          </div>
-        </div>
-
-        {/* Search Bar */}
-        <div className="search-container">
-          <div className="search-wrapper">
-            <div className="search-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8"/>
-                <path d="m21 21-4.35-4.35"/>
-              </svg>
-            </div>
-            <input
-              type="text"
-              placeholder="Look up a hobby or project..."
-              className="search-input"
-            />
-            <button className="search-button">Quick Search</button>
           </div>
         </div>
       </main>
