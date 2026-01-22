@@ -4,6 +4,12 @@
 
 In a world hyper-focused on internships and networking, it’s easy to get stuck in the same loops. CommonGrounds encourages exploration beyond the mundane by letting identity form through interaction, not pressure.
 
+## App Design
+![Home Page][images/home_page]
+![Analytics Dashboard][images/analytics_page]
+![Matcha Mode][images/matcha_mode]
+![Coffee Mode][images/coffee_mode]
+![Profile Page][images/profile_page]
 ---
 ## 🔨 How to Run
 Download this repo, open the CommonGrounds folders then do the following in the terminal.
@@ -47,7 +53,7 @@ CommonGrounds adapts recommendations over time using user behavior.
 
 Together, this creates a feedback loop where exploration shapes identity and identity shapes recommendations.
 
-### 📊 Reflective Dashboard
+### Reflective Dashboard
 
 Users can view stats about their activity and receive AI-generated insights suggesting new experiences to explore or ways to balance personal and professional growth.
 
@@ -63,12 +69,9 @@ Users can view stats about their activity and receive AI-generated insights sugg
 
 ---
 
-## 🔮 What’s Brewing Next
+## What’s Brewing Next
 
 * Deeper analytics with tools like Amplitude
 * Location-based discovery
 * In-app chat for collaborators
 
----
-
-CommonGrounds explores identity not as a label, but as something discovered through curiosity, interaction, and choice.
