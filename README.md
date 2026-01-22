@@ -5,11 +5,11 @@
 In a world hyper-focused on internships and networking, it’s easy to get stuck in the same loops. CommonGrounds encourages exploration beyond the mundane by letting identity form through interaction, not pressure.
 
 ## App Design
-![Home Page](images/home_page.png)
-![Analytics Dashboard](images/analytics_page.png)
-![Matcha Mode](images/matcha_mode.png)
-![Coffee Mode](images/coffee_mode.png)
-![Profile Page](images/profile_page.png)
+![Home Page](./images/home_page.png)
+![Analytics Dashboard](./images/analytics_page.png)
+![Matcha Mode](./images/matcha_mode.png)
+![Coffee Mode](./images/coffee_mode.png)
+![Profile Page](./images/profile_page.png)
 
 ---
 ## 🔨 How to Run
