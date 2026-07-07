@@ -3,6 +3,7 @@ Also contains similarity computation functions. Can be used for recommendation."
 
 from typing import Iterable
 
+import numpy as np
 from engine.ml_models.embedding_toolbox import EmbeddingToolbox
 from engine.ml_models.openai_client import OpenAIClient
 from engine.analytics import aggregate_mode
@@ -34,23 +35,26 @@ def _get_top_events(user_embedding: list[float], event_embeddings_dict: dict[int
     :return: list of top K most similar event ids
     :rtype: list of ints
     """
-    similarities = []
-    for key in event_embeddings_dict:
-        if not isinstance(event_embeddings_dict[key], list):
-            raise TypeError("event_embeddings_dict values must be list embeddings")
-        
-        if key in seen:
-            continue
-        else:
-            compatability = EmbeddingToolbox.compute_similarity(
-                EmbeddingToolbox.list_to_embedding(user_embedding),
-                EmbeddingToolbox.list_to_embedding(event_embeddings_dict[key])
-            )
-            similarities.append((key, compatability))
-    
-    similarities.sort(key=lambda x: x[1], reverse=True)
-    sorted_ids = [event_id for event_id, _ in similarities]
-    return sorted_ids[:top_k]
+    seen_ids = set(seen)
+    candidates = [
+        (event_id, embedding)
+        for event_id, embedding in event_embeddings_dict.items()
+        if event_id not in seen_ids
+    ]
+    if not candidates:
+        return []
+
+    event_ids, embeddings = zip(*candidates)
+    if not all(isinstance(embedding, list) for embedding in embeddings):
+        raise TypeError("event_embeddings_dict values must be list embeddings")
+
+    user_vector = np.asarray(user_embedding, dtype=float)
+    event_matrix = np.asarray(embeddings, dtype=float)
+    similarities = event_matrix @ user_vector
+    limit = min(top_k, len(event_ids))
+    top_indexes = np.argpartition(similarities, -limit)[-limit:]
+    top_indexes = top_indexes[np.argsort(similarities[top_indexes])[::-1]]
+    return [event_ids[index] for index in top_indexes]
 
 def recommend_events(event_embeddings_dict: dict[int, list[float]], seen: list[int], EmbeddingToolbox: EmbeddingToolbox, 
                      user_blurb: str, user_tags: list[str], OpenAIClient: OpenAIClient,

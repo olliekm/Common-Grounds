@@ -37,7 +37,6 @@ def aggregate_mode(swipes: Iterable[Analytics], matcha_mode: bool) -> Dict[str, 
 	avg_left_time = _safe_div(sum(left_times), len(left_times))
 	avg_right_time = _safe_div(sum(right_times), len(right_times))
 	hesitation_score = _safe_div(avg_right_time, avg_left_time) if avg_left_time else 0.0
-	hesitation_score = _safe_div(avg_right_time, avg_left_time) if avg_left_time else 0.0
 
 	return {
 		"mode": matcha_mode,
@@ -51,11 +50,13 @@ def aggregate_mode(swipes: Iterable[Analytics], matcha_mode: bool) -> Dict[str, 
 	}
 
 
-def _seconds(value: timedelta | None) -> float:
+def _seconds(value: timedelta | float | int | None) -> float:
 	if value is None:
 		return 0.0
 	if isinstance(value, timedelta):
 		return value.total_seconds()
+	if isinstance(value, (float, int)):
+		return float(value)
 	return 0.0
 
 
